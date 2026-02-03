@@ -97,33 +97,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | TBD | Pending |
-| INFRA-02 | TBD | Pending |
-| INFRA-03 | TBD | Pending |
-| INFRA-04 | TBD | Pending |
-| MATRIX-01 | TBD | Pending |
-| MATRIX-02 | TBD | Pending |
-| MATRIX-03 | TBD | Pending |
-| MATRIX-04 | TBD | Pending |
-| MATRIX-05 | TBD | Pending |
-| MATRIX-06 | TBD | Pending |
-| MATRIX-07 | TBD | Pending |
-| API-01 | TBD | Pending |
-| API-02 | TBD | Pending |
-| API-03 | TBD | Pending |
-| API-04 | TBD | Pending |
-| WIDGET-01 | TBD | Pending |
-| WIDGET-02 | TBD | Pending |
-| WIDGET-03 | TBD | Pending |
-| WIDGET-04 | TBD | Pending |
-| WIDGET-05 | TBD | Pending |
-| ORDER-01 | TBD | Pending |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Pending |
+| MATRIX-01 | Phase 2 | Pending |
+| MATRIX-02 | Phase 2 | Pending |
+| MATRIX-03 | Phase 2 | Pending |
+| MATRIX-04 | Phase 2 | Pending |
+| MATRIX-05 | Phase 2 | Pending |
+| MATRIX-06 | Phase 2 | Pending |
+| MATRIX-07 | Phase 6 | Pending |
+| API-01 | Phase 4 | Pending |
+| API-02 | Phase 4 | Pending |
+| API-03 | Phase 4 | Pending |
+| API-04 | Phase 4 | Pending |
+| WIDGET-01 | Phase 5 | Pending |
+| WIDGET-02 | Phase 5 | Pending |
+| WIDGET-03 | Phase 5 | Pending |
+| WIDGET-04 | Phase 5 | Pending |
+| WIDGET-05 | Phase 5 | Pending |
+| ORDER-01 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 21 total
-- Mapped to phases: 0
-- Unmapped: 21 (awaiting roadmap)
+- Mapped to phases: 21
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-03*
-*Last updated: 2026-02-03 after initial definition*
+*Last updated: 2026-02-03 after roadmap creation*
