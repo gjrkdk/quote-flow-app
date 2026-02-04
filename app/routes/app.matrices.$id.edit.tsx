@@ -15,6 +15,7 @@ import { authenticate } from "~/shopify.server";
 import { prisma } from "~/db.server";
 import { MatrixGrid } from "~/components/MatrixGrid";
 import { UnsavedChangesPrompt } from "~/components/UnsavedChangesPrompt";
+import { ProductPicker } from "~/components/ProductPicker";
 
 interface LoaderData {
   matrix: {
@@ -26,6 +27,11 @@ interface LoaderData {
   cells: Record<string, number>;
   unit: string;
   productCount: number;
+  products: Array<{
+    id: string;
+    productId: string;
+    productTitle: string;
+  }>;
 }
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -52,6 +58,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     include: {
       widthBreakpoints: { orderBy: { position: "asc" } },
       cells: true,
+      products: { orderBy: { assignedAt: "desc" } },
       _count: { select: { products: true } },
     },
   });
@@ -88,6 +95,11 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     cells: cellsMap,
     unit: store.unitPreference,
     productCount: matrix._count.products,
+    products: matrix.products.map((p) => ({
+      id: p.id,
+      productId: p.productId,
+      productTitle: p.productTitle,
+    })),
   });
 };
 
@@ -294,6 +306,143 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     return json({ success: true });
   }
 
+  if (intent === "assign-products") {
+    const productsStr = formData.get("products");
+    const confirmed = formData.get("confirmed") === "true";
+
+    if (!productsStr || typeof productsStr !== "string") {
+      return json({ error: "Invalid products data" }, { status: 400 });
+    }
+
+    const products = JSON.parse(productsStr) as Array<{
+      id: string;
+      title: string;
+    }>;
+
+    if (!Array.isArray(products) || products.length === 0) {
+      return json({ error: "No products provided" }, { status: 400 });
+    }
+
+    // Find store
+    const store = await prisma.store.findUnique({
+      where: { shop: session.shop },
+      select: { id: true },
+    });
+
+    if (!store) {
+      return json({ error: "Store not found" }, { status: 404 });
+    }
+
+    // Verify matrix belongs to this store
+    const matrix = await prisma.priceMatrix.findUnique({
+      where: { id, storeId: store.id },
+    });
+
+    if (!matrix) {
+      return json({ error: "Matrix not found" }, { status: 404 });
+    }
+
+    // Extract product IDs (handle both gid:// and numeric formats)
+    const productIds = products.map((p) => {
+      if (p.id.startsWith("gid://shopify/Product/")) {
+        return p.id;
+      }
+      return `gid://shopify/Product/${p.id}`;
+    });
+
+    // Check for conflicts - products already assigned to DIFFERENT matrices
+    const existingAssignments = await prisma.productMatrix.findMany({
+      where: {
+        productId: { in: productIds },
+        matrixId: { not: id },
+      },
+      include: {
+        matrix: { select: { name: true } },
+      },
+    });
+
+    if (existingAssignments.length > 0 && !confirmed) {
+      // Return conflicts for user confirmation
+      const conflicts = existingAssignments.map((assignment) => ({
+        productId: assignment.productId,
+        productTitle: assignment.productTitle,
+        currentMatrixName: assignment.matrix.name,
+      }));
+
+      return json({
+        success: false,
+        conflicts,
+      });
+    }
+
+    // Assign products in transaction
+    await prisma.$transaction(async (tx) => {
+      // Delete old assignments for these products (if reassigning)
+      await tx.productMatrix.deleteMany({
+        where: { productId: { in: productIds } },
+      });
+
+      // Create new assignments
+      const productMatrixData = products.map((product) => {
+        const productId = product.id.startsWith("gid://shopify/Product/")
+          ? product.id
+          : `gid://shopify/Product/${product.id}`;
+
+        return {
+          matrixId: id,
+          productId,
+          productTitle: product.title,
+        };
+      });
+
+      await tx.productMatrix.createMany({
+        data: productMatrixData,
+      });
+    });
+
+    return json({ success: true });
+  }
+
+  if (intent === "remove-product") {
+    const productMatrixId = formData.get("productMatrixId");
+
+    if (!productMatrixId || typeof productMatrixId !== "string") {
+      return json({ error: "Product matrix ID is required" }, { status: 400 });
+    }
+
+    // Find store
+    const store = await prisma.store.findUnique({
+      where: { shop: session.shop },
+      select: { id: true },
+    });
+
+    if (!store) {
+      return json({ error: "Store not found" }, { status: 404 });
+    }
+
+    // Verify the product assignment belongs to this matrix (security check)
+    const productMatrix = await prisma.productMatrix.findUnique({
+      where: { id: productMatrixId },
+      include: {
+        matrix: { select: { storeId: true } },
+      },
+    });
+
+    if (!productMatrix || productMatrix.matrix.storeId !== store.id || productMatrix.matrixId !== id) {
+      return json(
+        { error: "Product assignment not found or access denied" },
+        { status: 404 }
+      );
+    }
+
+    // Delete assignment
+    await prisma.productMatrix.delete({
+      where: { id: productMatrixId },
+    });
+
+    return json({ success: true });
+  }
+
   return json({ error: "Invalid intent" }, { status: 400 });
 };
 
@@ -321,6 +470,18 @@ export default function MatrixEdit() {
   const [isDirty, setIsDirty] = useState(false);
   const [emptyCells, setEmptyCells] = useState<Set<string>>(new Set());
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Product assignment state
+  const [conflictProducts, setConflictProducts] = useState<
+    Array<{
+      productId: string;
+      productTitle: string;
+      currentMatrixName: string;
+    }>
+  >([]);
+  const [pendingProducts, setPendingProducts] = useState<
+    Array<{ id: string; title: string }>
+  >([]);
 
   // Mark as dirty when data changes
   useEffect(() => {
@@ -559,6 +720,64 @@ export default function MatrixEdit() {
     }
   }, [fetcher.data]);
 
+  // Handle product assignment response
+  useEffect(() => {
+    if (
+      fetcher.data &&
+      "conflicts" in fetcher.data &&
+      Array.isArray(fetcher.data.conflicts)
+    ) {
+      setConflictProducts(
+        fetcher.data.conflicts as Array<{
+          productId: string;
+          productTitle: string;
+          currentMatrixName: string;
+        }>
+      );
+    }
+  }, [fetcher.data]);
+
+  // Product assignment handlers
+  const handleAssignProducts = useCallback(
+    (products: Array<{ id: string; title: string }>) => {
+      setPendingProducts(products);
+      const formData = new FormData();
+      formData.append("intent", "assign-products");
+      formData.append("products", JSON.stringify(products));
+      formData.append("confirmed", "false");
+      fetcher.submit(formData, { method: "post" });
+    },
+    [fetcher]
+  );
+
+  const handleRemoveProduct = useCallback(
+    (productMatrixId: string) => {
+      const formData = new FormData();
+      formData.append("intent", "remove-product");
+      formData.append("productMatrixId", productMatrixId);
+      fetcher.submit(formData, { method: "post" });
+    },
+    [fetcher]
+  );
+
+  const handleConfirmReassign = useCallback(
+    (productIds: string[]) => {
+      const formData = new FormData();
+      formData.append("intent", "assign-products");
+      formData.append("products", JSON.stringify(pendingProducts));
+      formData.append("confirmed", "true");
+      fetcher.submit(formData, { method: "post" });
+      setConflictProducts([]);
+      setPendingProducts([]);
+    },
+    [fetcher, pendingProducts]
+  );
+
+  const handleCancelReassign = useCallback(() => {
+    setConflictProducts([]);
+    setPendingProducts([]);
+  }, []);
+
   const isLoading = fetcher.state === "submitting" || fetcher.state === "loading";
   const hasEmptyGrid = widthBreakpoints.length === 0 || heightBreakpoints.length === 0;
 
@@ -616,18 +835,14 @@ export default function MatrixEdit() {
           </Card>
         )}
 
-        <Card>
-          <BlockStack gap="200">
-            <Text as="h2" variant="headingMd">
-              Products
-            </Text>
-            <Text as="p" tone="subdued">
-              {loaderData.productCount > 0
-                ? `${loaderData.productCount} product${loaderData.productCount === 1 ? "" : "s"} assigned`
-                : "Product assignment coming soon"}
-            </Text>
-          </BlockStack>
-        </Card>
+        <ProductPicker
+          assignedProducts={loaderData.products}
+          onAssign={handleAssignProducts}
+          onRemove={handleRemoveProduct}
+          conflictProducts={conflictProducts}
+          onConfirmReassign={handleConfirmReassign}
+          onCancelReassign={handleCancelReassign}
+        />
       </BlockStack>
 
       <UnsavedChangesPrompt isDirty={isDirty} />
