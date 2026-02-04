@@ -23,6 +23,13 @@ This roadmap delivers a public Shopify app enabling dimension-based pricing for 
 - INFRA-03: GDPR webhook handlers respond to customer data requests and deletion (mandatory for App Store)
 - INFRA-04: API key auto-generated per store on install for storefront authentication
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Scaffold Remix app, Prisma schema, OAuth config, GDPR webhooks
+- [ ] 01-02-PLAN.md — Dashboard UI with welcome card, API key management, empty state
+- [ ] 01-03-PLAN.md — Database migrations, error handling, end-to-end verification
+
 **Success Criteria:**
 1. Merchant can install the app from a development URL via Shopify OAuth
 2. Merchant can access the embedded app dashboard inside Shopify admin without authentication errors
