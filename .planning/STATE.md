@@ -1,7 +1,7 @@
 # Project State: Shopify Price Matrix App
 
 **Last Updated:** 2026-02-04
-**Status:** Phase 2 In Progress — Matrix Schema Complete
+**Status:** Phase 2 In Progress — Matrix List & Creation Complete
 
 ## Project Reference
 
@@ -14,16 +14,16 @@
 ## Current Position
 
 **Phase:** 2 of 6 (Admin Matrix Management) — IN PROGRESS
-**Plan:** 1 of 6
+**Plan:** 2 of 6
 **Status:** In progress
-**Last activity:** 2026-02-04 - Completed 02-01-PLAN.md (Database Schema & Settings)
+**Last activity:** 2026-02-04 - Completed 02-02-PLAN.md (Matrix List & Creation)
 
 **Progress Bar:**
 ```
-[█████               ] 19% (4/21 plans estimated complete)
+[█████               ] 24% (5/21 plans estimated complete)
 
 Phase 1: Foundation & Authentication       [██████████] 3/3 ✓
-Phase 2: Admin Matrix Management           [██        ] 1/6
+Phase 2: Admin Matrix Management           [███       ] 2/6
 Phase 3: Draft Orders Integration          [          ] 0/1
 Phase 4: Public REST API                   [          ] 0/4
 Phase 5: React Widget (npm Package)        [          ] 0/5
@@ -32,7 +32,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 
 ## Performance Metrics
 
-**Velocity:** 3.5 min/plan (4 plans completed)
+**Velocity:** 3.4 min/plan (5 plans completed)
 **Blockers:** 0
 **Active Research:** 0
 
@@ -43,6 +43,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 | 01-foundation-authentication | 02 | 2026-02-04 | 3min | ✓ Complete |
 | 01-foundation-authentication | 03 | 2026-02-04 | 5min | ✓ Complete |
 | 02-admin-matrix-management | 01 | 2026-02-04 | 2min | ✓ Complete |
+| 02-admin-matrix-management | 02 | 2026-02-04 | 3min | ✓ Complete |
 
 ## Accumulated Context
 
@@ -66,6 +67,9 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 - **[02-01]** Cascade deletes: Configure ON DELETE CASCADE for all matrix relations (automatic cleanup)
 - **[02-01]** One matrix per product: Unique constraint on ProductMatrix.productId enforces MATRIX-06 requirement
 - **[02-01]** Auto-save unit preference: Immediate save on change using useFetcher pattern (no separate button)
+- **[02-02]** Template breakpoints in mm with cm conversion: Small (3x3: 300/600/900mm), Medium (5x5: 200/400/600/800/1000mm), Custom (empty)
+- **[02-02]** Matrix duplicate behavior: Copy name with "(copy)" suffix, copy all breakpoints and cells, do NOT copy product assignments
+- **[02-02]** Matrix initialization pattern: Transaction creates matrix + breakpoints + zero-value cells atomically
 
 **Pending:**
 - Matrix size limits (100x100 from research) - validated during Phase 2 plan 02-03
@@ -75,7 +79,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 ### Open Todos
 
 **Immediate:**
-- [ ] Execute 02-02-PLAN.md (Matrix creation UI)
+- [ ] Execute 02-03-PLAN.md (Matrix editor)
 
 **Upcoming:**
 - [ ] Research Draft Orders behavior during Phase 3 planning
@@ -102,29 +106,31 @@ From research:
 ## Session Continuity
 
 **Last session:** 2026-02-04
-**Stopped at:** Completed 02-01-PLAN.md (Database Schema & Settings)
+**Stopped at:** Completed 02-02-PLAN.md (Matrix List & Creation)
 **Resume file:** None
 
 **What Just Happened:**
-- Completed 02-01-PLAN.md (Database schema for matrices + Settings page)
-- Added 4 new Prisma models: PriceMatrix, Breakpoint, MatrixCell, ProductMatrix
-- Added unitPreference field to Store model (defaults to "mm")
-- Created migration 20260204220146_add_matrix_models and applied successfully
-- Built Settings page with auto-save unit preference selector (mm/cm)
-- All verification checks passed (prisma migrate status, prisma validate)
+- Completed 02-02-PLAN.md (Matrix list page and creation flow)
+- Added Matrices navigation link to sidebar between Dashboard and Settings
+- Built matrix list page with EmptyState (zero matrices) and IndexTable (populated)
+- Built matrix creation page with name input and template selection (3x3, 5x5, custom)
+- Implemented delete action with confirmation modal and cascade delete
+- Implemented duplicate action copying matrix, breakpoints, and cells
+- All TypeScript compilation checks passed
 
 **What Comes Next:**
-- Phase 2 Plan 02: Matrix Creation UI — build the form to create new pricing matrices
-- Database models ready for CRUD operations
-- Unit preference available for display in matrix grid
-- Empty state on Dashboard ready to link to matrix creation flow
+- Phase 2 Plan 03: Matrix Editor — build the grid editor to modify breakpoints and cell prices
+- Matrix list and creation flow complete and functional
+- Template initialization creates breakpoints and zero-value cells ready for editing
+- Navigation flow established: list → create → redirect to editor
 
 **Context for Next Agent:**
-- All matrix database models exist with cascade deletes configured
-- Position-based cell pattern established (widthPosition/heightPosition)
-- Settings page functional with unit preference (mm/cm)
-- Database running on localhost:5400 with all Phase 1 + 2.1 tables
-- Ready for matrix creation UI in plan 02-02
+- Matrix list page at /app/matrices shows EmptyState or IndexTable
+- Matrix creation at /app/matrices/new creates matrix with templates
+- Template breakpoints: Small (3x3), Medium (5x5), Custom (empty)
+- Position-based cells (widthPosition/heightPosition) ready for grid display
+- Delete and duplicate actions functional
+- Ready for matrix editor implementation in plan 02-03
 
 ---
 *State tracked since: 2026-02-03*
