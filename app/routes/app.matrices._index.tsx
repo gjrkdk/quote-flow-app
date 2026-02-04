@@ -236,32 +236,28 @@ export default function MatricesIndex() {
         {new Date(matrix.updatedAt).toLocaleDateString()}
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Button
-          variant="plain"
-          size="slim"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDuplicateClick(matrix.id);
-          }}
-          loading={
-            fetcher.state === "submitting" &&
-            fetcher.formData?.get("matrixId") === matrix.id &&
-            fetcher.formData?.get("intent") === "duplicate"
-          }
-        >
-          Duplicate
-        </Button>
-        <Button
-          variant="plain"
-          size="slim"
-          tone="critical"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDeleteClick(matrix);
-          }}
-        >
-          Delete
-        </Button>
+        <div onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="plain"
+            size="slim"
+            onClick={() => handleDuplicateClick(matrix.id)}
+            loading={
+              fetcher.state === "submitting" &&
+              fetcher.formData?.get("matrixId") === matrix.id &&
+              fetcher.formData?.get("intent") === "duplicate"
+            }
+          >
+            Duplicate
+          </Button>
+          <Button
+            variant="plain"
+            size="slim"
+            tone="critical"
+            onClick={() => handleDeleteClick(matrix)}
+          >
+            Delete
+          </Button>
+        </div>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));

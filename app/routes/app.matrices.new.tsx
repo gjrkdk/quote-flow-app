@@ -7,10 +7,11 @@ import {
   Card,
   TextField,
   ChoiceList,
-  PageActions,
   Banner,
   BlockStack,
   Text,
+  InlineStack,
+  Button,
 } from "@shopify/polaris";
 import { useState } from "react";
 import { authenticate } from "~/shopify.server";
@@ -243,20 +244,19 @@ export default function NewMatrix() {
           </Layout.Section>
         </Layout>
 
-        <PageActions
-          primaryAction={{
-            content: "Create",
-            submit: true,
-            loading: isSubmitting,
-            disabled: !name.trim() || isSubmitting,
-          }}
-          secondaryActions={[
-            {
-              content: "Cancel",
-              url: "/app/matrices",
-            },
-          ]}
-        />
+        <Layout.Section>
+          <InlineStack gap="300" align="end">
+            <Button url="/app/matrices">Cancel</Button>
+            <Button
+              variant="primary"
+              submit
+              loading={isSubmitting}
+              disabled={!name.trim() || isSubmitting}
+            >
+              Create
+            </Button>
+          </InlineStack>
+        </Layout.Section>
       </Form>
     </Page>
   );
