@@ -1,10 +1,10 @@
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
-import { attachDatabasePool } from "@vercel/functions";
 
-// Vercel Fluid Compute pooling pattern
-// See: https://vercel.com/docs/storage/vercel-postgres/using-an-orm#prisma
+// Vercel Postgres pooling pattern with Prisma
+// Use connection pooling for serverless environments
+// See: https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-pooling
 
 declare global {
   var __db: PrismaClient | undefined;
@@ -12,25 +12,17 @@ declare global {
 
 let prisma: PrismaClient;
 
-if (process.env.NODE_ENV === "production") {
-  // Production: Use Vercel pooling
-  const pool = attachDatabasePool(
-    new Pool({
-      connectionString: process.env.DATABASE_URL,
-    })
-  );
+// Always use pooling with pg adapter for Vercel deployment
+// In production, DATABASE_URL should use pgbouncer connection with connection_limit=1
+if (!global.__db) {
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: process.env.NODE_ENV === "production" ? 1 : 10,
+  });
   const adapter = new PrismaPg(pool);
-  prisma = new PrismaClient({ adapter });
-} else {
-  // Development: Use singleton pattern to avoid connection exhaustion
-  if (!global.__db) {
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-    });
-    const adapter = new PrismaPg(pool);
-    global.__db = new PrismaClient({ adapter });
-  }
-  prisma = global.__db;
+  global.__db = new PrismaClient({ adapter });
 }
+
+prisma = global.__db;
 
 export { prisma };
