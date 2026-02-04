@@ -7,6 +7,10 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { AppProvider, Page, Card, BlockStack, Text, Button, InlineStack } from "@shopify/polaris";
+import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
+
+export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 function Document({ children }: { children: React.ReactNode }) {
   return (
@@ -42,26 +46,53 @@ export default function App() {
 export function ErrorBoundary() {
   const error = useRouteError();
 
+  const isAuthError =
+    isRouteErrorResponse(error) &&
+    (error.status === 401 || error.status === 403);
+
+  const title = isAuthError
+    ? "Authentication Error"
+    : "Something went wrong";
+
+  const description = isAuthError
+    ? "We couldn't verify your session. This usually happens when your session has expired or the app needs to be reinstalled."
+    : "We encountered an unexpected error. This usually resolves by trying again.";
+
   return (
     <Document>
-      <div style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-        <h1>Something went wrong</h1>
-        {isRouteErrorResponse(error) ? (
-          <p>
-            {error.status} {error.statusText}
-          </p>
-        ) : error instanceof Error ? (
-          <p>{error.message}</p>
-        ) : (
-          <p>Unknown error</p>
-        )}
-        <a
-          href="/auth/login"
-          style={{ marginTop: "1rem", display: "inline-block" }}
-        >
-          Try installing again
-        </a>
-      </div>
+      <AppProvider i18n={{}}>
+        <Page title={title}>
+          <BlockStack gap="500">
+            <Card>
+              <BlockStack gap="400">
+                <Text variant="headingMd" as="h2">
+                  {title}
+                </Text>
+                <Text variant="bodyMd" as="p" tone="subdued">
+                  {description}
+                </Text>
+                {!isAuthError && error instanceof Error && (
+                  <Text variant="bodySm" as="p" tone="subdued">
+                    Error: {error.message}
+                  </Text>
+                )}
+                <InlineStack gap="300">
+                  <Button url="/auth/login" variant="primary">
+                    Try installing again
+                  </Button>
+                  <Button
+                    variant="plain"
+                    url="mailto:support@example.com"
+                    external
+                  >
+                    Contact support
+                  </Button>
+                </InlineStack>
+              </BlockStack>
+            </Card>
+          </BlockStack>
+        </Page>
+      </AppProvider>
     </Document>
   );
 }
