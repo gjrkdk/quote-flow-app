@@ -1,7 +1,7 @@
 # Project State: Shopify Price Matrix App
 
 **Last Updated:** 2026-02-04
-**Status:** Phase 2 In Progress — Matrix List & Creation Complete
+**Status:** Phase 2 In Progress — Matrix Editor Complete
 
 ## Project Reference
 
@@ -14,16 +14,16 @@
 ## Current Position
 
 **Phase:** 2 of 6 (Admin Matrix Management) — IN PROGRESS
-**Plan:** 2 of 6
+**Plan:** 3 of 6
 **Status:** In progress
-**Last activity:** 2026-02-04 - Completed 02-02-PLAN.md (Matrix List & Creation)
+**Last activity:** 2026-02-04 - Completed 02-03-PLAN.md (Matrix Editor)
 
 **Progress Bar:**
 ```
-[█████               ] 24% (5/21 plans estimated complete)
+[██████              ] 29% (6/21 plans estimated complete)
 
 Phase 1: Foundation & Authentication       [██████████] 3/3 ✓
-Phase 2: Admin Matrix Management           [███       ] 2/6
+Phase 2: Admin Matrix Management           [█████     ] 3/6
 Phase 3: Draft Orders Integration          [          ] 0/1
 Phase 4: Public REST API                   [          ] 0/4
 Phase 5: React Widget (npm Package)        [          ] 0/5
@@ -32,7 +32,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 
 ## Performance Metrics
 
-**Velocity:** 3.4 min/plan (5 plans completed)
+**Velocity:** 3.3 min/plan (6 plans completed)
 **Blockers:** 0
 **Active Research:** 0
 
@@ -44,6 +44,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 | 01-foundation-authentication | 03 | 2026-02-04 | 5min | ✓ Complete |
 | 02-admin-matrix-management | 01 | 2026-02-04 | 2min | ✓ Complete |
 | 02-admin-matrix-management | 02 | 2026-02-04 | 3min | ✓ Complete |
+| 02-admin-matrix-management | 03 | 2026-02-04 | 3min | ✓ Complete |
 
 ## Accumulated Context
 
@@ -70,16 +71,19 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 - **[02-02]** Template breakpoints in mm with cm conversion: Small (3x3: 300/600/900mm), Medium (5x5: 200/400/600/800/1000mm), Custom (empty)
 - **[02-02]** Matrix duplicate behavior: Copy name with "(copy)" suffix, copy all breakpoints and cells, do NOT copy product assignments
 - **[02-02]** Matrix initialization pattern: Transaction creates matrix + breakpoints + zero-value cells atomically
+- **[02-03]** Custom HTML table over Polaris DataGrid: Needed full control for spreadsheet-like behavior with inline editing, tab navigation, and dynamic breakpoint headers
+- **[02-03]** Map with string keys for cells: Using Map<string, number> with 'col,row' keys provides O(1) cell lookups and natural fit for sparse 2D data
+- **[02-03]** Cell re-indexing on breakpoint changes: When breakpoints added/removed in middle of array, all cells re-indexed to maintain position consistency with sorted breakpoints
+- **[02-03]** Client-side empty cell validation: Highlights empty cells with red background before save, provides clear visual feedback for required fields
 
 **Pending:**
-- Matrix size limits (100x100 from research) - validated during Phase 2 plan 02-03
 - Rate limiting strategy (in-memory vs Redis) - decided during Phase 4 planning
 - Pricing model (subscription vs one-time) - decided during Phase 6
 
 ### Open Todos
 
 **Immediate:**
-- [ ] Execute 02-03-PLAN.md (Matrix editor)
+- [ ] Execute 02-04-PLAN.md (Product assignment)
 
 **Upcoming:**
 - [ ] Research Draft Orders behavior during Phase 3 planning
@@ -106,31 +110,33 @@ From research:
 ## Session Continuity
 
 **Last session:** 2026-02-04
-**Stopped at:** Completed 02-02-PLAN.md (Matrix List & Creation)
+**Stopped at:** Completed 02-03-PLAN.md (Matrix Editor)
 **Resume file:** None
 
 **What Just Happened:**
-- Completed 02-02-PLAN.md (Matrix list page and creation flow)
-- Added Matrices navigation link to sidebar between Dashboard and Settings
-- Built matrix list page with EmptyState (zero matrices) and IndexTable (populated)
-- Built matrix creation page with name input and template selection (3x3, 5x5, custom)
-- Implemented delete action with confirmation modal and cascade delete
-- Implemented duplicate action copying matrix, breakpoints, and cells
+- Completed 02-03-PLAN.md (Matrix editor with spreadsheet-style grid)
+- Built MatrixGrid component: custom HTML table with inline editing, +/x buttons for breakpoints
+- Built UnsavedChangesPrompt: useBlocker-based navigation guard with modal
+- Built matrix editor route: loader fetches matrix data, action handles save/rename with full validation
+- Cell editing with number inputs, automatic sorting of breakpoints, empty cell highlighting
+- Atomic transaction save updating matrix name, breakpoints, and cells
 - All TypeScript compilation checks passed
 
 **What Comes Next:**
-- Phase 2 Plan 03: Matrix Editor — build the grid editor to modify breakpoints and cell prices
-- Matrix list and creation flow complete and functional
-- Template initialization creates breakpoints and zero-value cells ready for editing
-- Navigation flow established: list → create → redirect to editor
+- Phase 2 Plan 04: Product Assignment — add product picker to assign products to matrices
+- Matrix editor fully functional with inline price editing
+- Breakpoint management (add/remove) working with auto-sort and cell re-indexing
+- Validation ensures all cells filled before save
+- Unsaved changes protection prevents data loss
 
 **Context for Next Agent:**
-- Matrix list page at /app/matrices shows EmptyState or IndexTable
-- Matrix creation at /app/matrices/new creates matrix with templates
-- Template breakpoints: Small (3x3), Medium (5x5), Custom (empty)
-- Position-based cells (widthPosition/heightPosition) ready for grid display
-- Delete and duplicate actions functional
-- Ready for matrix editor implementation in plan 02-03
+- Matrix editor at /app/matrices/:id/edit displays spreadsheet-style grid
+- Custom HTML table with width breakpoints as columns, height breakpoints as rows
+- Add/remove breakpoints via +/x buttons, auto-sorts ascending, max 50x50 enforced
+- Inline price editing with number inputs, empty cells highlighted red
+- Save validates all cells filled, updates atomically in transaction
+- Products section shows placeholder "Product assignment coming soon"
+- Ready for product picker implementation in plan 02-04
 
 ---
 *State tracked since: 2026-02-03*
