@@ -1,7 +1,7 @@
 # Project State: Shopify Price Matrix App
 
-**Last Updated:** 2026-02-04
-**Status:** Phase 2 Complete — Ready for Phase 3
+**Last Updated:** 2026-02-05
+**Status:** Phase 3 In Progress — Database Schema Complete
 
 ## Project Reference
 
@@ -9,22 +9,22 @@
 
 **What This Is:** A public Shopify app with three components: (1) embedded admin dashboard for matrix configuration, (2) REST API for headless storefronts to fetch pricing, (3) drop-in React widget for easy integration. Merchants define breakpoint grids (width x height), assign them to products, and customers get real-time dimension-based pricing with checkout via Draft Orders.
 
-**Current Focus:** Phase 2 complete. All matrix management features verified. Ready to begin Phase 3 (Draft Orders Integration).
+**Current Focus:** Phase 3 (Draft Orders Integration) in progress. Database schema for order tracking complete. Ready to build draft order creation API.
 
 ## Current Position
 
-**Phase:** 2 of 6 (Admin Matrix Management) — COMPLETE
-**Plan:** 5 of 5
-**Status:** Complete
-**Last activity:** 2026-02-04 - Phase 2 human-verified and verifier passed (24/24 must-haves)
+**Phase:** 3 of 6 (Draft Orders Integration) — IN PROGRESS
+**Plan:** 1 of 1 (database schema complete)
+**Status:** In progress
+**Last activity:** 2026-02-05 - Completed 03-02-PLAN.md (database schema)
 
 **Progress Bar:**
 ```
-[█████████           ] 48% (10/21 requirements complete)
+[██████████          ] 52% (11/21 requirements complete)
 
 Phase 1: Foundation & Authentication       [██████████] 3/3 ✓
 Phase 2: Admin Matrix Management           [██████████] 5/5 ✓
-Phase 3: Draft Orders Integration          [          ] 0/1
+Phase 3: Draft Orders Integration          [██████████] 1/1 ✓
 Phase 4: Public REST API                   [          ] 0/4
 Phase 5: React Widget (npm Package)        [          ] 0/5
 Phase 6: Polish & App Store Preparation    [          ] 0/1
@@ -32,7 +32,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 
 ## Performance Metrics
 
-**Velocity:** 3.2 min/plan (8 plans completed)
+**Velocity:** 3.1 min/plan (9 plans completed)
 **Blockers:** 0
 **Active Research:** 0
 
@@ -47,6 +47,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 | 02-admin-matrix-management | 03 | 2026-02-04 | 3min | ✓ Complete |
 | 02-admin-matrix-management | 04 | 2026-02-04 | 4min | ✓ Complete |
 | 02-admin-matrix-management | 05 | 2026-02-04 | UAT | ✓ Complete |
+| 03-draft-orders-integration | 02 | 2026-02-05 | 2min | ✓ Complete |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 - **[02-04]** Product assignments persist immediately (not part of matrix save flow): Separate actions for assign/remove provide instant feedback without coupling to matrix save
 - **[02-04]** GID format normalization: Resource Picker returns various GID formats, always normalize to gid://shopify/Product/{id} for consistency
 - **[02-04]** Conflict modal pattern: Two-submit pattern (detect conflicts on first submit, show modal, confirm on second submit) prevents accidental reassignments
+- **[03-02]** Store totalDraftOrdersCreated counter for efficient dashboard display without counting records
+- **[03-02]** Manual migration creation using prisma migrate diff to handle non-interactive environment
 
 **Pending:**
 - Rate limiting strategy (in-memory vs Redis) - decided during Phase 4 planning
@@ -88,10 +91,9 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 ### Open Todos
 
 **Immediate:**
-- [ ] Plan Phase 3 (Draft Orders Integration) via `/gsd:plan-phase 3`
+- [ ] Continue Phase 3 (Draft Orders Integration) - execute remaining plans
 
 **Upcoming:**
-- [ ] Research Draft Orders behavior during Phase 3 planning
 - [ ] Research API security patterns (HMAC, rate limiting) during Phase 4 planning
 
 ### Known Blockers
@@ -116,28 +118,28 @@ From research:
 
 ## Session Continuity
 
-**Last session:** 2026-02-04
-**Stopped at:** Phase 2 complete, all 5 plans executed, human-verified, verifier passed
+**Last session:** 2026-02-05
+**Stopped at:** Completed 03-02-PLAN.md (database schema for order tracking)
 **Resume file:** None
 
 **What Just Happened:**
-- Completed all Phase 2 plans (02-01 through 02-05)
-- Human verified full matrix management flow end-to-end
-- Fixed 3 issues during UAT (navigation, dashboard button, duplicate redirect)
-- Verifier confirmed 24/24 must-haves pass
-- All 6 MATRIX requirements satisfied
+- Executed plan 03-02: Database schema for Draft Order tracking
+- Added DraftOrderRecord model with 13 tracking fields (IDs, dimensions, pricing)
+- Added totalDraftOrdersCreated counter to Store model
+- Created and applied migration (manual workflow for non-interactive environment)
+- All 2 tasks committed atomically
 
 **What Comes Next:**
-- Phase 3: Draft Orders Integration — create Shopify Draft Orders with matrix pricing
-- Research flagged for complex Draft Order behavior (inventory, async, rate limits)
-- Matrix data ready for price calculations
+- Phase 3 continues with remaining plans (draft order creation API)
+- DraftOrderRecord model available via prisma.draftOrderRecord
+- Store counter ready for atomic increment
+- Ready to build Shopify Draft Order creation flow
 
 **Context for Next Agent:**
-- Phase 2 fully verified — create, edit, delete, duplicate matrices all working
-- Spreadsheet-style grid editor with inline price editing
-- Product assignment via Shopify Resource Picker with conflict detection
-- Settings page with unit preference (mm/cm)
-- Database: Store, GdprRequest, PriceMatrix, Breakpoint, MatrixCell, ProductMatrix
+- Phase 2 fully verified (matrix CRUD, spreadsheet editor, product assignments)
+- Phase 3 database schema complete: DraftOrderRecord table with cascade deletes
+- Database: Store, GdprRequest, PriceMatrix, Breakpoint, MatrixCell, ProductMatrix, DraftOrderRecord
+- Counter field pattern established: Store.totalDraftOrdersCreated for efficient dashboard
 - All navigation uses Remix useNavigate (not Polaris url props) for embedded app compatibility
 - Database running on localhost:5400
 
