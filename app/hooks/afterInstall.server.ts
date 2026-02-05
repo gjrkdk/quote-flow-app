@@ -7,6 +7,7 @@ export interface EnsureStoreResult {
     shop: string;
     apiKeyPrefix: string | null;
     onboardingCompleted: boolean;
+    totalDraftOrdersCreated: number;
   };
   isNewInstall: boolean;
   apiKey?: string; // Only returned on new install
@@ -33,6 +34,7 @@ export async function ensureStoreExists(
       shop: true,
       apiKeyPrefix: true,
       onboardingCompleted: true,
+      totalDraftOrdersCreated: true,
     },
   });
 
@@ -66,6 +68,7 @@ export async function ensureStoreExists(
       shop: true,
       apiKeyPrefix: true,
       onboardingCompleted: true,
+      totalDraftOrdersCreated: true,
     },
   });
 

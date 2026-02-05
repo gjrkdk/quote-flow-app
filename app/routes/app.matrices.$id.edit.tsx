@@ -9,6 +9,8 @@ import {
   Text,
   Button,
   InlineStack,
+  TextField,
+  Select,
 } from "@shopify/polaris";
 import { useState, useEffect, useCallback } from "react";
 import { authenticate } from "~/shopify.server";
@@ -16,6 +18,7 @@ import { prisma } from "~/db.server";
 import { MatrixGrid } from "~/components/MatrixGrid";
 import { UnsavedChangesPrompt } from "~/components/UnsavedChangesPrompt";
 import { ProductPicker } from "~/components/ProductPicker";
+import { createDraftOrder } from "~/services/draft-order.server";
 
 interface LoaderData {
   matrix: {
@@ -104,7 +107,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
   const { id } = params;
 
   if (!id) {
@@ -443,6 +446,84 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     return json({ success: true });
   }
 
+  if (intent === "create-test-draft-order") {
+    const productId = formData.get("productId");
+    const widthStr = formData.get("width");
+    const heightStr = formData.get("height");
+    const quantityStr = formData.get("quantity");
+
+    // Validate input
+    if (!productId || typeof productId !== "string") {
+      return json({ error: "Product is required" }, { status: 400 });
+    }
+
+    if (!widthStr || !heightStr || !quantityStr) {
+      return json(
+        { error: "Width, height, and quantity are required" },
+        { status: 400 }
+      );
+    }
+
+    const width = parseFloat(widthStr as string);
+    const height = parseFloat(heightStr as string);
+    const quantity = parseInt(quantityStr as string, 10);
+
+    if (isNaN(width) || isNaN(height) || isNaN(quantity)) {
+      return json(
+        { error: "Width, height, and quantity must be valid numbers" },
+        { status: 400 }
+      );
+    }
+
+    // Find store
+    const store = await prisma.store.findUnique({
+      where: { shop: session.shop },
+      select: { id: true, unitPreference: true },
+    });
+
+    if (!store) {
+      return json({ error: "Store not found" }, { status: 404 });
+    }
+
+    // Find product assignment to get product title
+    const productMatrix = await prisma.productMatrix.findFirst({
+      where: { productId, matrixId: id },
+    });
+
+    if (!productMatrix) {
+      return json(
+        { error: "Product not assigned to this matrix" },
+        { status: 404 }
+      );
+    }
+
+    // Convert dimensions to mm if unit is cm
+    const widthInMm = store.unitPreference === "cm" ? width * 10 : width;
+    const heightInMm = store.unitPreference === "cm" ? height * 10 : height;
+
+    // Create draft order
+    const result = await createDraftOrder({
+      admin,
+      storeId: store.id,
+      matrixId: id,
+      productId,
+      productTitle: productMatrix.productTitle,
+      width: widthInMm,
+      height: heightInMm,
+      quantity,
+      unitPreference: store.unitPreference,
+    });
+
+    if (!result.success) {
+      return json({ error: result.error || "Failed to create draft order" });
+    }
+
+    return json({
+      success: true,
+      draftOrder: result.draftOrder,
+    });
+  }
+
   return json({ error: "Invalid intent" }, { status: 400 });
 };
 
@@ -483,6 +564,13 @@ export default function MatrixEdit() {
   const [pendingProducts, setPendingProducts] = useState<
     Array<{ id: string; title: string }>
   >([]);
+
+  // Test Draft Order state
+  const [testProductId, setTestProductId] = useState<string>("");
+  const [testWidth, setTestWidth] = useState<string>("");
+  const [testHeight, setTestHeight] = useState<string>("");
+  const [testQuantity, setTestQuantity] = useState<string>("1");
+  const testFetcher = useFetcher<typeof action>();
 
   // Mark as dirty when data changes
   useEffect(() => {
@@ -779,6 +867,21 @@ export default function MatrixEdit() {
     setPendingProducts([]);
   }, []);
 
+  // Test Draft Order handler
+  const handleCreateTestDraftOrder = useCallback(() => {
+    if (!testProductId || !testWidth || !testHeight || !testQuantity) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("intent", "create-test-draft-order");
+    formData.append("productId", testProductId);
+    formData.append("width", testWidth);
+    formData.append("height", testHeight);
+    formData.append("quantity", testQuantity);
+    testFetcher.submit(formData, { method: "post" });
+  }, [testProductId, testWidth, testHeight, testQuantity, testFetcher]);
+
   const isLoading = fetcher.state === "submitting" || fetcher.state === "loading";
   const hasEmptyGrid = widthBreakpoints.length === 0 || heightBreakpoints.length === 0;
 
@@ -844,6 +947,111 @@ export default function MatrixEdit() {
           onConfirmReassign={handleConfirmReassign}
           onCancelReassign={handleCancelReassign}
         />
+
+        <Card>
+          <BlockStack gap="400">
+            <BlockStack gap="200">
+              <Text as="h2" variant="headingMd">
+                Test Draft Order
+              </Text>
+              <Text as="p" tone="subdued">
+                Create a test Draft Order in Shopify to verify your pricing
+                matrix works correctly. This creates a real draft order visible
+                in your Shopify admin.
+              </Text>
+            </BlockStack>
+
+            {loaderData.products.length === 0 ? (
+              <Banner tone="info">
+                Assign at least one product to test Draft Order creation.
+              </Banner>
+            ) : (
+              <BlockStack gap="300">
+                <Select
+                  label="Product"
+                  options={[
+                    { label: "Select a product", value: "" },
+                    ...loaderData.products.map((p) => ({
+                      label: p.productTitle,
+                      value: p.productId,
+                    })),
+                  ]}
+                  value={testProductId}
+                  onChange={setTestProductId}
+                />
+
+                <InlineStack gap="300">
+                  <TextField
+                    label={`Width (${loaderData.unit})`}
+                    type="number"
+                    value={testWidth}
+                    onChange={setTestWidth}
+                    autoComplete="off"
+                  />
+                  <TextField
+                    label={`Height (${loaderData.unit})`}
+                    type="number"
+                    value={testHeight}
+                    onChange={setTestHeight}
+                    autoComplete="off"
+                  />
+                  <TextField
+                    label="Quantity"
+                    type="number"
+                    value={testQuantity}
+                    onChange={setTestQuantity}
+                    autoComplete="off"
+                  />
+                </InlineStack>
+
+                <InlineStack align="start">
+                  <Button
+                    variant="primary"
+                    onClick={handleCreateTestDraftOrder}
+                    loading={testFetcher.state === "submitting"}
+                    disabled={
+                      !testProductId ||
+                      !testWidth ||
+                      !testHeight ||
+                      !testQuantity ||
+                      testFetcher.state === "submitting"
+                    }
+                  >
+                    Create Test Draft Order
+                  </Button>
+                </InlineStack>
+
+                {testFetcher.data && "error" in testFetcher.data && (
+                  <Banner tone="critical">
+                    {String(testFetcher.data.error)}
+                  </Banner>
+                )}
+
+                {testFetcher.data &&
+                  "success" in testFetcher.data &&
+                  testFetcher.data.success &&
+                  "draftOrder" in testFetcher.data &&
+                  testFetcher.data.draftOrder ? (
+                    <Banner tone="success">
+                      <BlockStack gap="200">
+                        <Text as="p">
+                          Draft Order created successfully:{" "}
+                          <strong>
+                            {String((testFetcher.data.draftOrder as any).name)}
+                          </strong>
+                        </Text>
+                        <Text as="p" tone="subdued">
+                          View this draft order in your Shopify admin under
+                          Orders &gt; Drafts. You can filter by the
+                          "price-matrix" tag.
+                        </Text>
+                      </BlockStack>
+                    </Banner>
+                  ) : null}
+              </BlockStack>
+            )}
+          </BlockStack>
+        </Card>
       </BlockStack>
 
       <UnsavedChangesPrompt isDirty={isDirty} />

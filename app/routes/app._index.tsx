@@ -45,6 +45,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       shop: store.shop,
       apiKeyPrefix: store.apiKeyPrefix,
       onboardingCompleted: store.onboardingCompleted,
+      totalDraftOrdersCreated: store.totalDraftOrdersCreated,
     },
     newApiKey: isNewInstall ? apiKey ?? null : null,
   });
@@ -219,6 +220,27 @@ export default function Index() {
               </BlockStack>
             </Card>
           </Layout.Section>
+
+          {store.totalDraftOrdersCreated > 0 && (
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="400">
+                  <BlockStack gap="200">
+                    <Text as="h2" variant="headingMd">
+                      Draft Orders
+                    </Text>
+                    <Text as="p" tone="subdued">
+                      Orders created with matrix pricing. View in Shopify admin
+                      using the "price-matrix" tag filter.
+                    </Text>
+                  </BlockStack>
+                  <Text as="p" variant="headingLg">
+                    {store.totalDraftOrdersCreated}
+                  </Text>
+                </BlockStack>
+              </Card>
+            </Layout.Section>
+          )}
 
           <Layout.Section>
             <Card>
