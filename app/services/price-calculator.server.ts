@@ -48,6 +48,35 @@ export function validateDimensions(
 }
 
 /**
+ * Finds the breakpoint position for a given dimension value.
+ *
+ * Behavior:
+ * - Exact match: returns that breakpoint's position
+ * - Between breakpoints: rounds UP to next higher breakpoint position
+ * - Below smallest: clamps to position 0
+ * - Above largest: clamps to last position
+ *
+ * @param dimension - The dimension value to look up
+ * @param breakpoints - Sorted array of breakpoints
+ * @returns The position to use for price lookup
+ */
+function findBreakpointPosition(
+  dimension: number,
+  breakpoints: Array<{ position: number; value: number }>
+): number {
+  // Sort breakpoints by position to ensure correct ordering
+  const sorted = [...breakpoints].sort((a, b) => a.position - b.position);
+
+  // Find first breakpoint where dimension <= breakpoint.value
+  // This naturally handles "round up" behavior
+  const index = sorted.findIndex((bp) => dimension <= bp.value);
+
+  // If index is -1, dimension is above all breakpoints -> clamp to last position
+  // Otherwise use the found breakpoint's position
+  return index === -1 ? sorted[sorted.length - 1].position : sorted[index].position;
+}
+
+/**
  * Calculates price for given dimensions using matrix breakpoints.
  *
  * Behavior:
@@ -67,37 +96,8 @@ export function calculatePrice(
   height: number,
   matrixData: MatrixData
 ): number {
-  // Sort breakpoints by position to ensure correct ordering
-  const sortedWidthBreakpoints = [...matrixData.widthBreakpoints].sort(
-    (a, b) => a.position - b.position
-  );
-  const sortedHeightBreakpoints = [...matrixData.heightBreakpoints].sort(
-    (a, b) => a.position - b.position
-  );
-
-  // Find width position
-  // findIndex returns first breakpoint where dimension <= breakpoint.value
-  // This naturally handles "round up" behavior
-  const widthIndex = sortedWidthBreakpoints.findIndex(
-    (bp) => width <= bp.value
-  );
-
-  // If findIndex returns -1, dimension is above all breakpoints -> clamp to last position
-  // Otherwise use the found breakpoint's position
-  const widthPosition =
-    widthIndex === -1
-      ? sortedWidthBreakpoints[sortedWidthBreakpoints.length - 1].position
-      : sortedWidthBreakpoints[widthIndex].position;
-
-  // Find height position (same logic)
-  const heightIndex = sortedHeightBreakpoints.findIndex(
-    (bp) => height <= bp.value
-  );
-
-  const heightPosition =
-    heightIndex === -1
-      ? sortedHeightBreakpoints[sortedHeightBreakpoints.length - 1].position
-      : sortedHeightBreakpoints[heightIndex].position;
+  const widthPosition = findBreakpointPosition(width, matrixData.widthBreakpoints);
+  const heightPosition = findBreakpointPosition(height, matrixData.heightBreakpoints);
 
   // Look up price cell for calculated position
   const cell = matrixData.cells.find(
