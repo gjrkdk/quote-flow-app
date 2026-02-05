@@ -1,7 +1,7 @@
 # Project State: Shopify Price Matrix App
 
 **Last Updated:** 2026-02-05
-**Status:** Phase 4 In Progress — Public REST API Foundation Complete
+**Status:** Phase 4 In Progress — REST API Endpoint Complete
 
 ## Project Reference
 
@@ -9,23 +9,23 @@
 
 **What This Is:** A public Shopify app with three components: (1) embedded admin dashboard for matrix configuration, (2) REST API for headless storefronts to fetch pricing, (3) drop-in React widget for easy integration. Merchants define breakpoint grids (width x height), assign them to products, and customers get real-time dimension-based pricing with checkout via Draft Orders.
 
-**Current Focus:** Phase 4 in progress. Plan 04-01 complete (API auth, validation, rate limiting). Ready for Plan 04-02 (REST endpoint).
+**Current Focus:** Phase 4 in progress. Plans 04-01 and 04-02 complete (API auth, validation, rate limiting, REST endpoint). Ready for Plan 04-03 (human verification).
 
 ## Current Position
 
 **Phase:** 4 of 6 (Public REST API) — IN PROGRESS
-**Plan:** 1 of 4 — COMPLETE
+**Plan:** 2 of 4 — COMPLETE
 **Status:** In progress
-**Last activity:** 2026-02-05 - Completed 04-01-PLAN.md (API auth and validation foundation)
+**Last activity:** 2026-02-05 - Completed 04-02-PLAN.md (REST endpoint and product matrix lookup)
 
 **Progress Bar:**
 ```
-[████████████▌       ] 57% (12/21 requirements complete)
+[█████████████       ] 62% (13/21 requirements complete)
 
 Phase 1: Foundation & Authentication       [██████████] 3/3 ✓
 Phase 2: Admin Matrix Management           [██████████] 5/5 ✓
 Phase 3: Draft Orders Integration          [██████████] 1/1 ✓
-Phase 4: Public REST API                   [██▌       ] 1/4
+Phase 4: Public REST API                   [█████     ] 2/4
 Phase 5: React Widget (npm Package)        [          ] 0/5
 Phase 6: Polish & App Store Preparation    [          ] 0/1
 ```
@@ -51,6 +51,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 | 03-draft-orders-integration | 02 | 2026-02-05 | 2min | ✓ Complete |
 | 03-draft-orders-integration | 03 | 2026-02-05 | UAT | ✓ Complete |
 | 04-public-rest-api | 01 | 2026-02-05 | 2min | ✓ Complete |
+| 04-public-rest-api | 02 | 2026-02-05 | 2min | ✓ Complete |
 
 ## Accumulated Context
 
@@ -93,6 +94,10 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 - **[04-01]** In-memory rate limiting: 100 requests per 15-minute window per store, single-instance only (Redis migration needed for multi-instance)
 - **[04-01]** Product ID normalization to GID format: Always normalize to gid://shopify/Product/{id} for consistency with ProductMatrix table
 - **[04-01]** Same error message for enumeration prevention: Return "Invalid API key" for both missing store and wrong key to prevent enumeration attacks
+- **[04-02]** CORS on all responses: withCors() wrapper adds CORS headers to success and error responses for headless storefront integration
+- **[04-02]** Store ownership validation: lookupProductMatrix validates matrix belongs to authenticated store (prevents cross-store access)
+- **[04-02]** Resource routes for REST endpoints: Export loader/action with no default export for REST API endpoints
+- **[04-02]** Generic 500 errors: Never expose internal details in error responses (console.error for debugging)
 
 **Pending:**
 - Pricing model (subscription vs one-time) - decided during Phase 6
@@ -100,7 +105,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 ### Open Todos
 
 **Immediate:**
-- [ ] Execute Plan 04-02 (REST endpoint implementation)
+- [ ] Execute Plan 04-03 (human verification of API)
 
 **Upcoming:**
 - [ ] Research widget packaging patterns during Phase 5 planning
@@ -132,31 +137,33 @@ From research:
 ## Session Continuity
 
 **Last session:** 2026-02-05
-**Stopped at:** Completed 04-01-PLAN.md (API auth and validation foundation)
+**Stopped at:** Completed 04-02-PLAN.md (REST endpoint and product matrix lookup)
 **Resume file:** None
 
 **What Just Happened:**
-- Executed Plan 04-01: Created API authentication, validation, and rate limiting utilities
-- Installed zod@4.3.6 for input validation with coercion
-- Created authenticateApiKey middleware with timing-safe comparison
-- Created in-memory rate limiter (100 req/15min per store)
-- All error responses follow RFC 7807 format
+- Executed Plan 04-02: Created REST endpoint GET /api/v1/products/:productId/price
+- Created product-matrix-lookup.server.ts service (queries database, validates ownership, transforms to MatrixData)
+- Created api.v1.products.$productId.price.ts resource route (auth, validation, rate limiting, CORS)
+- All error responses follow RFC 7807 format with CORS headers
+- Resource route pattern: export loader/action, no default export
 
 **What Comes Next:**
-- Plan 04-02: REST endpoint implementation (GET /api/prices/:productId)
-- Compose authenticateApiKey + checkRateLimit + price calculation
-- Use PriceQuerySchema for query parameter validation
-- Return price response with rate limit headers
+- Plan 04-03: Human verification of API with curl tests
+- Test authentication (401 without API key)
+- Test price calculation (dimensions between breakpoints round up)
+- Test error cases (404 for no matrix, 400 for invalid dimensions)
+- Verify CORS headers and rate limit headers
 
 **Context for Next Agent:**
-- Phase 4 Plan 01 complete: Authentication, validation, and rate limiting foundation ready
-- New utilities: authenticateApiKey, checkRateLimit, PriceQuerySchema, ProductIdSchema, normalizeProductId
-- Existing services: price-calculator.server.ts (calculatePrice), draft-order.server.ts
-- Database: Store (with apiKeyHash), PriceMatrix, ProductMatrix, Breakpoint, MatrixCell
-- All error responses use RFC 7807 format (type, title, status, detail)
-- Rate limiting is in-memory (single-instance only, Redis migration needed for multi-instance)
+- Phase 4 Plans 01-02 complete: REST API endpoint fully implemented
+- New files: product-matrix-lookup.server.ts, api.v1.products.$productId.price.ts
+- API endpoint: GET /api/v1/products/:productId/price?width=X&height=Y&quantity=Z
+- Requires X-API-Key header from store (generated in Phase 1)
+- Requires product with assigned matrix (created in Phase 2)
+- Returns JSON with price, dimensions, quantity, total, matrix name
+- All responses include CORS headers (Access-Control-Allow-Origin: *)
+- Success responses include rate limit headers (X-RateLimit-Limit/Remaining/Reset)
 - Database running on localhost:5400
-- Dependencies: zod@4.3.6, exponential-backoff
 
 ---
 *State tracked since: 2026-02-03*
