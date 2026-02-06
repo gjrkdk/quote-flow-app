@@ -26,10 +26,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Pricing API
 
-- [ ] **API-01**: REST endpoint returns price for a given product + width + height
-- [ ] **API-02**: API authenticates requests via X-API-Key header
-- [ ] **API-03**: Dimensions between breakpoints round up to the next higher breakpoint
-- [ ] **API-04**: API returns error for dimensions outside matrix range
+- [x] **API-01**: REST endpoint returns price for a given product + width + height
+- [x] **API-02**: API authenticates requests via X-API-Key header
+- [x] **API-03**: Dimensions between breakpoints round up to the next higher breakpoint
+- [x] **API-04**: API returns error for dimensions outside matrix range
 
 ### Storefront Widget
 
@@ -41,7 +41,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Orders
 
-- [ ] **ORDER-01**: Draft Order created via Shopify GraphQL API with custom locked price
+- [x] **ORDER-01**: Draft Order created via Shopify GraphQL API with custom locked price
 
 ## v2 Requirements
 
@@ -108,16 +108,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MATRIX-05 | Phase 2 | Complete |
 | MATRIX-06 | Phase 2 | Complete |
 | MATRIX-07 | Phase 6 | Pending |
-| API-01 | Phase 4 | Pending |
-| API-02 | Phase 4 | Pending |
-| API-03 | Phase 4 | Pending |
-| API-04 | Phase 4 | Pending |
+| API-01 | Phase 4 | Complete |
+| API-02 | Phase 4 | Complete |
+| API-03 | Phase 4 | Complete |
+| API-04 | Phase 4 | Complete |
 | WIDGET-01 | Phase 5 | Pending |
 | WIDGET-02 | Phase 5 | Pending |
 | WIDGET-03 | Phase 5 | Pending |
 | WIDGET-04 | Phase 5 | Pending |
 | WIDGET-05 | Phase 5 | Pending |
-| ORDER-01 | Phase 3 | Pending |
+| ORDER-01 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 21 total
@@ -126,4 +126,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-03*
-*Last updated: 2026-02-03 after roadmap creation*
+*Last updated: 2026-02-06 after Phase 4 completion*

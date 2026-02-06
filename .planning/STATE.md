@@ -1,7 +1,7 @@
 # Project State: Shopify Price Matrix App
 
-**Last Updated:** 2026-02-05
-**Status:** Phase 4 In Progress — REST API Endpoint Complete
+**Last Updated:** 2026-02-06
+**Status:** Phase 4 Complete — Public REST API Verified
 
 ## Project Reference
 
@@ -9,23 +9,23 @@
 
 **What This Is:** A public Shopify app with three components: (1) embedded admin dashboard for matrix configuration, (2) REST API for headless storefronts to fetch pricing, (3) drop-in React widget for easy integration. Merchants define breakpoint grids (width x height), assign them to products, and customers get real-time dimension-based pricing with checkout via Draft Orders.
 
-**Current Focus:** Phase 4 in progress. Plans 04-01 and 04-02 complete (API auth, validation, rate limiting, REST endpoint). Ready for Plan 04-03 (human verification).
+**Current Focus:** Phase 4 complete. All 3 plans executed: API auth + validators, REST endpoint, human verification with curl tests. Ready for Phase 5 (React Widget).
 
 ## Current Position
 
-**Phase:** 4 of 6 (Public REST API) — IN PROGRESS
-**Plan:** 2 of 4 — COMPLETE
-**Status:** In progress
-**Last activity:** 2026-02-05 - Completed 04-02-PLAN.md (REST endpoint and product matrix lookup)
+**Phase:** 4 of 6 (Public REST API) — COMPLETE
+**Plan:** 3 of 3 — COMPLETE
+**Status:** Phase complete
+**Last activity:** 2026-02-06 - Completed 04-03-PLAN.md (human verification of API)
 
 **Progress Bar:**
 ```
-[█████████████       ] 62% (13/21 requirements complete)
+[████████████████    ] 81% (17/21 requirements complete)
 
 Phase 1: Foundation & Authentication       [██████████] 3/3 ✓
 Phase 2: Admin Matrix Management           [██████████] 5/5 ✓
-Phase 3: Draft Orders Integration          [██████████] 1/1 ✓
-Phase 4: Public REST API                   [█████     ] 2/4
+Phase 3: Draft Orders Integration          [██████████] 3/3 ✓
+Phase 4: Public REST API                   [██████████] 3/3 ✓
 Phase 5: React Widget (npm Package)        [          ] 0/5
 Phase 6: Polish & App Store Preparation    [          ] 0/1
 ```
@@ -52,6 +52,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 | 03-draft-orders-integration | 03 | 2026-02-05 | UAT | ✓ Complete |
 | 04-public-rest-api | 01 | 2026-02-05 | 2min | ✓ Complete |
 | 04-public-rest-api | 02 | 2026-02-05 | 2min | ✓ Complete |
+| 04-public-rest-api | 03 | 2026-02-06 | 5min | ✓ Complete |
 
 ## Accumulated Context
 
@@ -98,6 +99,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 - **[04-02]** Store ownership validation: lookupProductMatrix validates matrix belongs to authenticated store (prevents cross-store access)
 - **[04-02]** Resource routes for REST endpoints: Export loader/action with no default export for REST API endpoints
 - **[04-02]** Generic 500 errors: Never expose internal details in error responses (console.error for debugging)
+- **[04-03]** Null query param handling: searchParams.get() returns null not undefined; filter before Zod parsing for .default() to work
 
 **Pending:**
 - Pricing model (subscription vs one-time) - decided during Phase 6
@@ -105,7 +107,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 ### Open Todos
 
 **Immediate:**
-- [ ] Execute Plan 04-03 (human verification of API)
+- [ ] Plan Phase 5 (React Widget)
 
 **Upcoming:**
 - [ ] Research widget packaging patterns during Phase 5 planning
@@ -136,33 +138,27 @@ From research:
 
 ## Session Continuity
 
-**Last session:** 2026-02-05
-**Stopped at:** Completed 04-02-PLAN.md (REST endpoint and product matrix lookup)
+**Last session:** 2026-02-06
+**Stopped at:** Completed Phase 4 (Public REST API) — all 3 plans executed and verified
 **Resume file:** None
 
 **What Just Happened:**
-- Executed Plan 04-02: Created REST endpoint GET /api/v1/products/:productId/price
-- Created product-matrix-lookup.server.ts service (queries database, validates ownership, transforms to MatrixData)
-- Created api.v1.products.$productId.price.ts resource route (auth, validation, rate limiting, CORS)
-- All error responses follow RFC 7807 format with CORS headers
-- Resource route pattern: export loader/action, no default export
+- Executed all 3 plans in Phase 4 (Public REST API)
+- Plan 04-01: Created API auth middleware, Zod validators, rate limiting utility
+- Plan 04-02: Created product-matrix-lookup service and REST endpoint resource route
+- Plan 04-03: Human verified API with 7 curl tests — all passing
+- Fixed bug: null query params from searchParams.get() need filtering before Zod parsing
+- REST API fully verified end-to-end
 
 **What Comes Next:**
-- Plan 04-03: Human verification of API with curl tests
-- Test authentication (401 without API key)
-- Test price calculation (dimensions between breakpoints round up)
-- Test error cases (404 for no matrix, 400 for invalid dimensions)
-- Verify CORS headers and rate limit headers
+- Plan Phase 5: React Widget (npm Package)
+- Research widget packaging patterns (Shadow DOM, npm publishing)
 
 **Context for Next Agent:**
-- Phase 4 Plans 01-02 complete: REST API endpoint fully implemented
-- New files: product-matrix-lookup.server.ts, api.v1.products.$productId.price.ts
+- Phase 4 complete: REST API fully verified and ready for widget integration
 - API endpoint: GET /api/v1/products/:productId/price?width=X&height=Y&quantity=Z
-- Requires X-API-Key header from store (generated in Phase 1)
-- Requires product with assigned matrix (created in Phase 2)
-- Returns JSON with price, dimensions, quantity, total, matrix name
-- All responses include CORS headers (Access-Control-Allow-Origin: *)
-- Success responses include rate limit headers (X-RateLimit-Limit/Remaining/Reset)
+- Requires X-API-Key header, returns JSON with price/dimensions/quantity/total/matrix
+- CORS headers on all responses, rate limit headers on success responses
 - Database running on localhost:5400
 
 ---
