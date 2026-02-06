@@ -12,6 +12,70 @@ export interface CSVParseResult {
 
 const MAX_FILE_SIZE = 1048576; // 1MB in bytes
 
+interface RowValidationResult {
+  valid: boolean;
+  width?: number;
+  height?: number;
+  price?: number;
+  error?: string;
+}
+
+function createErrorResult(errorMessage: string): CSVParseResult {
+  return {
+    success: false,
+    widths: [],
+    heights: [],
+    cells: new Map(),
+    errors: [{ line: 0, message: errorMessage }],
+    totalRows: 0,
+    validRows: 0,
+  };
+}
+
+function validateRow(row: string[]): RowValidationResult {
+  // Validate column count
+  if (row.length !== 3) {
+    return {
+      valid: false,
+      error: `expected 3 columns, got ${row.length}`,
+    };
+  }
+
+  // Parse and validate width
+  const width = Number(row[0].trim());
+  if (isNaN(width) || width <= 0) {
+    return {
+      valid: false,
+      error: "width must be a positive number",
+    };
+  }
+
+  // Parse and validate height
+  const height = Number(row[1].trim());
+  if (isNaN(height) || height <= 0) {
+    return {
+      valid: false,
+      error: "height must be a positive number",
+    };
+  }
+
+  // Parse and validate price
+  const price = Number(row[2].trim());
+  if (isNaN(price) || price < 0) {
+    return {
+      valid: false,
+      error: "price must be a non-negative number",
+    };
+  }
+
+  return {
+    valid: true,
+    width,
+    height,
+    price,
+  };
+}
+
 export async function parseMatrixCSV(
   csvContent: string
 ): Promise<CSVParseResult> {
@@ -19,15 +83,7 @@ export async function parseMatrixCSV(
 
   // Check file size limit
   if (csvContent.length > MAX_FILE_SIZE) {
-    return {
-      success: false,
-      widths: [],
-      heights: [],
-      cells: new Map(),
-      errors: [{ line: 0, message: "CSV file must be under 1MB" }],
-      totalRows: 0,
-      validRows: 0,
-    };
+    return createErrorResult("CSV file must be under 1MB");
   }
 
   // Parse CSV
@@ -40,35 +96,14 @@ export async function parseMatrixCSV(
       relax_column_count: true,
     });
   } catch (error) {
-    return {
-      success: false,
-      widths: [],
-      heights: [],
-      cells: new Map(),
-      errors: [
-        {
-          line: 0,
-          message: `CSV parsing error: ${error instanceof Error ? error.message : "Unknown error"}`,
-        },
-      ],
-      totalRows: 0,
-      validRows: 0,
-    };
+    return createErrorResult(
+      `CSV parsing error: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 
   // Check if CSV is empty
   if (records.length === 0) {
-    return {
-      success: false,
-      widths: [],
-      heights: [],
-      cells: new Map(),
-      errors: [
-        { line: 0, message: "CSV file is empty or contains only headers" },
-      ],
-      totalRows: 0,
-      validRows: 0,
-    };
+    return createErrorResult("CSV file is empty or contains only headers");
   }
 
   // Detect and skip header row
@@ -87,17 +122,7 @@ export async function parseMatrixCSV(
 
   // Check if only header exists
   if (startIndex >= records.length) {
-    return {
-      success: false,
-      widths: [],
-      heights: [],
-      cells: new Map(),
-      errors: [
-        { line: 0, message: "CSV file is empty or contains only headers" },
-      ],
-      totalRows: 0,
-      validRows: 0,
-    };
+    return createErrorResult("CSV file is empty or contains only headers");
   }
 
   // Process data rows
@@ -112,52 +137,21 @@ export async function parseMatrixCSV(
     const row = records[i];
     const lineNumber = i + 1; // 1-indexed line numbers
 
-    // Validate column count
-    if (row.length !== 3) {
-      errors.push({
-        line: lineNumber,
-        message: `expected 3 columns, got ${row.length}`,
-      });
-      continue;
-    }
+    const validation = validateRow(row);
 
-    // Parse width
-    const widthStr = row[0].trim();
-    const width = Number(widthStr);
-    if (isNaN(width) || width <= 0) {
+    if (!validation.valid) {
       errors.push({
         line: lineNumber,
-        message: "width must be a positive number",
-      });
-      continue;
-    }
-
-    // Parse height
-    const heightStr = row[1].trim();
-    const height = Number(heightStr);
-    if (isNaN(height) || height <= 0) {
-      errors.push({
-        line: lineNumber,
-        message: "height must be a positive number",
-      });
-      continue;
-    }
-
-    // Parse price
-    const priceStr = row[2].trim();
-    const price = Number(priceStr);
-    if (isNaN(price) || price < 0) {
-      errors.push({
-        line: lineNumber,
-        message: "price must be a non-negative number",
+        message: validation.error!,
       });
       continue;
     }
 
     // Valid row - collect data
-    widthSet.add(width);
-    heightSet.add(height);
-    cellData.set(`${width},${height}`, price); // Last value wins for duplicates
+    const { width, height, price } = validation;
+    widthSet.add(width!);
+    heightSet.add(height!);
+    cellData.set(`${width},${height}`, price!); // Last value wins for duplicates
     validRows++;
   }
 
