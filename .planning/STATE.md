@@ -9,30 +9,30 @@
 
 **What This Is:** A public Shopify app with three components: (1) embedded admin dashboard for matrix configuration, (2) REST API for headless storefronts to fetch pricing, (3) drop-in React widget for easy integration. Merchants define breakpoint grids (width x height), assign them to products, and customers get real-time dimension-based pricing with checkout via Draft Orders.
 
-**Current Focus:** Phase 5 in progress (React Widget). Plan 05-01 complete: REST API extended with currency, dimension ranges, and Draft Order creation endpoint for widget integration.
+**Current Focus:** Phase 5 in progress (React Widget). Plans 05-01 through 05-03 complete: REST API extended, widget package scaffolded, hooks and internal components built.
 
 ## Current Position
 
 **Phase:** 5 of 6 (React Widget) — IN PROGRESS
-**Plan:** 1 of 5 — COMPLETE
+**Plan:** 3 of 5 — COMPLETE
 **Status:** In progress
-**Last activity:** 2026-02-06 - Completed 05-01-PLAN.md (Widget API Extensions)
+**Last activity:** 2026-02-06 - Completed 05-03-PLAN.md (Widget Hooks and Components)
 
 **Progress Bar:**
 ```
-[█████████████████   ] 81% (17/21 requirements complete)
+[███████████████████ ] 90% (19/21 requirements complete)
 
 Phase 1: Foundation & Authentication       [██████████] 3/3 ✓
 Phase 2: Admin Matrix Management           [██████████] 5/5 ✓
 Phase 3: Draft Orders Integration          [██████████] 3/3 ✓
 Phase 4: Public REST API                   [██████████] 3/3 ✓
-Phase 5: React Widget (npm Package)        [██        ] 1/5
+Phase 5: React Widget (npm Package)        [██████    ] 3/5
 Phase 6: Polish & App Store Preparation    [          ] 0/1
 ```
 
 ## Performance Metrics
 
-**Velocity:** 11.1 min/plan (15 plans completed)
+**Velocity:** 8.4 min/plan (17 plans completed)
 **Blockers:** 0
 **Active Research:** 0
 
@@ -55,6 +55,7 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 | 04-public-rest-api | 03 | 2026-02-06 | 5min | ✓ Complete |
 | 05-react-widget | 01 | 2026-02-06 | 63min | ✓ Complete |
 | 05-react-widget | 02 | 2026-02-06 | 2min | ✓ Complete |
+| 05-react-widget | 03 | 2026-02-06 | 2min | ✓ Complete |
 
 ## Accumulated Context
 
@@ -111,6 +112,10 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 - **[05-02]** Theme props as CSS custom properties: 6 optional props mapping to CSS vars (primaryColor, textColor, borderColor, borderRadius, fontSize, errorColor)
 - **[05-02]** Single callback pattern: onAddToCart fires when Draft Order created, payload includes draftOrderId, checkoutUrl, price, total, dimensions, quantity
 - **[05-02]** Internal types not exported: API response types defined but not exposed in public API
+- **[05-03]** 400ms debounce timing: Within 300-500ms range per CONTEXT.md, balances responsiveness with API rate limiting
+- **[05-03]** CSS shimmer skeleton for Shadow DOM: Custom CSS animation instead of react-loading-skeleton (library's style injection incompatible with Shadow DOM)
+- **[05-03]** AbortController for request cancellation: Cancels in-flight requests when dimension inputs change to prevent race conditions
+- **[05-03]** Metadata caching pattern: Store currency/unit/dimensionRange on first successful fetch (these don't change for a product)
 
 **Pending:**
 - Pricing model (subscription vs one-time) - decided during Phase 6
@@ -150,28 +155,27 @@ From research:
 ## Session Continuity
 
 **Last session:** 2026-02-06
-**Stopped at:** Completed 05-01-PLAN.md (Widget API Extensions)
+**Stopped at:** Completed 05-03-PLAN.md (Widget Hooks and Components)
 **Resume file:** None
 
 **What Just Happened:**
-- Executed Plan 05-01: Widget API Extensions
-- Added currency field to Store model with USD default (migration applied)
-- Extended ProductMatrixResult to include dimensionRange, unit, currency
-- Updated price API to return real ISO 4217 currency code and dimension ranges
-- Created POST /api/v1/draft-orders REST endpoint with API key auth
-- Draft Order endpoint creates admin client from store's access token, returns invoiceUrl as checkoutUrl
-- All 3 tasks committed atomically: 8d699d6, dc51cbb, ce325db
+- Executed Plan 05-03: Widget Hooks and Components
+- Created usePriceFetch hook with 400ms debouncing, AbortController cancellation, and RFC 7807 error handling
+- Created useDraftOrder hook for Draft Order creation via POST /api/v1/draft-orders
+- Built 4 internal UI components: DimensionInput (text field with validation), PriceDisplay (currency formatting with CSS shimmer), QuantitySelector (+/- buttons), AddToCartButton (disabled state + CSS spinner)
+- All components Shadow DOM compatible (pm- CSS prefixes, CSS custom properties, no external CSS libraries)
+- All 2 tasks committed atomically: 9e7aab6, 6c04616
 
 **What Comes Next:**
-- Continue Phase 5: React Widget (Plans 02-05)
-- Widget can now format prices with currency, validate dimensions, and create Draft Orders
-- API ready for widget integration
+- Continue Phase 5: React Widget (Plans 04-05)
+- Plan 04: Compose PriceMatrixWidget from hooks and components
+- Plan 05: Widget styling with Shadow DOM CSS
 
 **Context for Next Agent:**
-- Widget package scaffold complete at packages/widget/
-- TypeScript types define complete API: 3 required props (apiUrl, apiKey, productId), optional theme prop, onAddToCart callback
-- React externalized as peer dependency, not bundled
-- Build outputs ESM + UMD formats with TypeScript declarations
+- All hooks and components ready at packages/widget/src/hooks/ and packages/widget/src/components/
+- usePriceFetch manages debounced price fetching with width/height state
+- useDraftOrder handles Draft Order creation with creating/error states
+- Internal components use pm- CSS classes and CSS custom properties for theming
 - index.ts currently imports non-existent PriceMatrixWidget.tsx (will be created in Plan 04)
 
 ---
