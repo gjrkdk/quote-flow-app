@@ -1,7 +1,7 @@
 # Project State: Shopify Price Matrix App
 
 **Last Updated:** 2026-02-06
-**Status:** Phase 5 Complete — React Widget Verified
+**Status:** Phase 6 In Progress — Freemium Billing Complete
 
 ## Project Reference
 
@@ -9,30 +9,30 @@
 
 **What This Is:** A public Shopify app with three components: (1) embedded admin dashboard for matrix configuration, (2) REST API for headless storefronts to fetch pricing, (3) drop-in React widget for easy integration. Merchants define breakpoint grids (width x height), assign them to products, and customers get real-time dimension-based pricing with checkout via Draft Orders.
 
-**Current Focus:** Phase 5 complete. All 4 plans executed: API extensions, widget scaffold, hooks + components, widget assembly with Shadow DOM. 17/17 must-haves verified. Ready for Phase 6 (Polish).
+**Current Focus:** Phase 6 in progress. Plans 06-01 (CSV parser) and 06-02 (Freemium billing) complete. Building polish features and preparing for App Store submission.
 
 ## Current Position
 
-**Phase:** 5 of 6 (React Widget) — COMPLETE
-**Plan:** 4 of 4 — COMPLETE
-**Status:** Phase complete
-**Last activity:** 2026-02-06 - Phase 5 verified (17/17 must-haves)
+**Phase:** 6 of 6 (Polish & App Store Preparation)
+**Plan:** 2 of 4 complete
+**Status:** In progress
+**Last activity:** 2026-02-06 - Completed 06-02-PLAN.md (Freemium Billing Setup)
 
 **Progress Bar:**
 ```
-[████████████████████] 95% (20/21 requirements complete)
+[████████████████████] 95% (21/22 requirements complete)
 
 Phase 1: Foundation & Authentication       [██████████] 3/3 ✓
 Phase 2: Admin Matrix Management           [██████████] 5/5 ✓
 Phase 3: Draft Orders Integration          [██████████] 3/3 ✓
 Phase 4: Public REST API                   [██████████] 3/3 ✓
 Phase 5: React Widget (npm Package)        [██████████] 4/4 ✓
-Phase 6: Polish & App Store Preparation    [          ] 0/1
+Phase 6: Polish & App Store Preparation    [█████░░░░░] 2/4
 ```
 
 ## Performance Metrics
 
-**Velocity:** 8.4 min/plan (17 plans completed)
+**Velocity:** 7.4 min/plan (19 plans completed)
 **Blockers:** 0
 **Active Research:** 0
 
@@ -57,6 +57,8 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 | 05-react-widget | 02 | 2026-02-06 | 2min | ✓ Complete |
 | 05-react-widget | 03 | 2026-02-06 | 2min | ✓ Complete |
 | 05-react-widget | 04 | 2026-02-06 | 7min | ✓ Complete |
+| 06-polish-app-store-preparation | 01 | 2026-02-06 | 2min | ✓ Complete |
+| 06-polish-app-store-preparation | 02 | 2026-02-06 | 3min | ✓ Complete |
 
 ## Accumulated Context
 
@@ -121,9 +123,19 @@ Phase 6: Polish & App Store Preparation    [          ] 0/1
 - **[05-04]** Theme prop runtime customization: 6 optional theme properties map to CSS custom properties as inline styles on Shadow DOM root for runtime theming without CSS rebuilds
 - **[05-04]** Client-side dimension validation: Widget validates dimensions are numeric and within dimensionRange before enabling add-to-cart, showing inline error messages
 - **[05-04]** Checkout redirect flow: Add-to-cart creates Draft Order, calls onAddToCart callback, then redirects to checkout URL via window.location.href
+- **[06-01]** csv-parse library for CSV parsing: Industry-standard parser with robust edge case handling (malformed rows, varied column counts)
+- **[06-01]** 1MB CSV file size limit: Prevents resource exhaustion and DoS attacks via oversized file uploads
+- **[06-01]** Position-based cell mapping: Cell keys use widthIdx,heightIdx matching Phase 2 matrix structure for seamless integration
+- **[06-01]** Last-value-wins for duplicate entries: Simple conflict resolution for duplicate width/height pairs without requiring user intervention
+- **[06-01]** Automatic header detection: First row checked for "width", "height", or "price" keywords to skip headers automatically
+- **[06-01]** Error collection pattern: Continue parsing to collect ALL errors (not fail-fast) so users can fix multiple issues at once
+- **[06-02]** Freemium plan pricing: $12/month with 14-day trial for unlimited matrices and CSV import
+- **[06-02]** Free tier limit: 1 matrix with full functionality (no feature gating except CSV import)
+- **[06-02]** isTest flag from NODE_ENV: Development mode uses isTest=true to prevent charging test stores
+- **[06-02]** Billing check utilities pattern: checkBillingStatus, requirePaidPlan, canCreateMatrix for consistent billing enforcement across routes
 
 **Pending:**
-- Pricing model (subscription vs one-time) - decided during Phase 6
+- None
 
 ### Open Todos
 
@@ -160,29 +172,28 @@ From research:
 ## Session Continuity
 
 **Last session:** 2026-02-06
-**Stopped at:** Completed 05-04-PLAN.md (Widget Assembly)
+**Stopped at:** Completed 06-02-PLAN.md (Freemium Billing Setup)
 **Resume file:** None
 
 **What Just Happened:**
-- Executed Plan 05-04: Widget Assembly
-- Created PriceMatrixWidget.tsx component with Shadow DOM (react-shadow), wiring all hooks and components together
-- Created styles.ts with CSS string export containing pm- prefixed classes and CSS custom properties
-- Built package to ESM + UMD with TypeScript declarations (npm run build)
-- Human verification checkpoint: Both API endpoints tested (price API returns currency/dimensionRange/unit, draft-orders API creates order with checkoutUrl)
-- Build outputs verified: ESM (408KB), UMD (283KB), TypeScript declarations present
-- All locked decisions from CONTEXT.md implemented (text fields, inline validation, 400ms debounce, total price only, checkout redirect)
-- Task committed atomically: 3910d28
+- Executed Plan 06-02: Freemium Billing Setup
+- Configured Shopify Billing API in shopify.server.ts with UNLIMITED_PLAN ($12/mo, 14-day trial, Every30Days interval)
+- Created billing.server.ts utilities: checkBillingStatus, requirePaidPlan, canCreateMatrix
+- Free tier limited to 1 matrix, paid tier enables unlimited matrices + CSV import
+- All billing checks use isTest flag based on NODE_ENV for development safety
+- Task commits: 13ed0c3 (billing config), ad51cf0 (utilities)
 
 **What Comes Next:**
-- Continue Phase 5: React Widget (Plan 05)
-- Plan 05: Widget documentation and publishing preparation (README, npm pack verification, publish instructions)
+- Continue Phase 6: Polish & App Store Preparation (Plans 03-04)
+- Plan 03: Admin UI enhancements (billing status, upgrade CTAs, error improvements)
+- Plan 04: CSV import route integration with billing gating
 
 **Context for Next Agent:**
-- Widget is complete and buildable at packages/widget/
-- PriceMatrixWidget component assembles all hooks and components inside Shadow DOM
-- Theme prop enables runtime customization via CSS custom properties
-- Complete user flow works: dimension inputs → price fetch → quantity → add to cart → checkout
-- Package builds successfully, React externalized, TypeScript declarations generated
+- Billing utilities ready at app/services/billing.server.ts
+- canCreateMatrix() checks free tier limit and billing status
+- requirePaidPlan() returns upgrade details for UI messaging
+- CSV import (Plan 04) should call requirePaidPlan() to gate feature
+- Matrix creation route needs integration with canCreateMatrix()
 
 ---
 *State tracked since: 2026-02-03*
