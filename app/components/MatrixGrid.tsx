@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface MatrixGridProps {
   widthBreakpoints: number[];
@@ -25,6 +25,28 @@ export const MatrixGrid = React.memo(function MatrixGrid({
   onRemoveHeightBreakpoint,
   emptyCells,
 }: MatrixGridProps) {
+  // Roving tabindex state for keyboard navigation
+  const [focusedRow, setFocusedRow] = useState(0);
+  const [focusedCol, setFocusedCol] = useState(0);
+  const cellRefs = useRef<Map<string, HTMLTableCellElement>>(new Map());
+
+  // Clamp focus coordinates when grid changes
+  useEffect(() => {
+    const maxRow = heightBreakpoints.length - 1;
+    const maxCol = widthBreakpoints.length - 1;
+
+    if (focusedRow > maxRow) setFocusedRow(Math.max(0, maxRow));
+    if (focusedCol > maxCol) setFocusedCol(Math.max(0, maxCol));
+  }, [widthBreakpoints.length, heightBreakpoints.length, focusedRow, focusedCol]);
+
+  // Focus the active cell when coordinates change
+  useEffect(() => {
+    const key = `${focusedCol},${focusedRow}`;
+    const cell = cellRefs.current.get(key);
+    if (cell) {
+      cell.focus();
+    }
+  }, [focusedRow, focusedCol]);
   const handleAddWidthBreakpoint = () => {
     const value = prompt("Enter width breakpoint value:");
     if (value === null) return;
@@ -68,16 +90,111 @@ export const MatrixGrid = React.memo(function MatrixGrid({
 
   const getCellKey = (col: number, row: number) => `${col},${row}`;
 
+  const handleCellKeyDown = (
+    e: React.KeyboardEvent<HTMLTableCellElement>,
+    col: number,
+    row: number
+  ) => {
+    const maxRow = heightBreakpoints.length - 1;
+    const maxCol = widthBreakpoints.length - 1;
+
+    switch (e.key) {
+      case "ArrowRight":
+        e.preventDefault();
+        if (col < maxCol) {
+          setFocusedCol(col + 1);
+          setFocusedRow(row);
+        }
+        break;
+      case "ArrowLeft":
+        e.preventDefault();
+        if (col > 0) {
+          setFocusedCol(col - 1);
+          setFocusedRow(row);
+        }
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        if (row < maxRow) {
+          setFocusedRow(row + 1);
+          setFocusedCol(col);
+        }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (row > 0) {
+          setFocusedRow(row - 1);
+          setFocusedCol(col);
+        }
+        break;
+      case "Enter":
+        e.preventDefault();
+        const input = e.currentTarget.querySelector("input");
+        if (input) input.focus();
+        break;
+      case "Escape":
+        e.preventDefault();
+        const activeInput = document.activeElement as HTMLInputElement;
+        if (activeInput && activeInput.tagName === "INPUT") {
+          activeInput.blur();
+          e.currentTarget.focus();
+        }
+        break;
+      case "Tab":
+        e.preventDefault();
+        if (e.shiftKey) {
+          // Shift+Tab: move to previous cell
+          if (col > 0) {
+            setFocusedCol(col - 1);
+            setFocusedRow(row);
+          } else if (row > 0) {
+            // Wrap to last cell of previous row
+            setFocusedCol(maxCol);
+            setFocusedRow(row - 1);
+          } else {
+            // First cell: allow default Tab to exit grid
+            return;
+          }
+        } else {
+          // Tab: move to next cell
+          if (col < maxCol) {
+            setFocusedCol(col + 1);
+            setFocusedRow(row);
+          } else if (row < maxRow) {
+            // Wrap to first cell of next row
+            setFocusedCol(0);
+            setFocusedRow(row + 1);
+          } else {
+            // Last cell: allow default Tab to exit grid
+            return;
+          }
+        }
+        break;
+      case "Home":
+        e.preventDefault();
+        setFocusedCol(0);
+        setFocusedRow(row);
+        break;
+      case "End":
+        e.preventDefault();
+        setFocusedCol(maxCol);
+        setFocusedRow(row);
+        break;
+    }
+  };
+
   return (
     <div style={{ overflowX: "auto" }}>
       <table
+        role="grid"
+        aria-label="Price matrix editor"
         style={{
           borderCollapse: "collapse",
           width: "100%",
         }}
       >
         <thead>
-          <tr>
+          <tr role="row">
             <th
               style={{
                 border: "1px solid #e1e3e5",
@@ -91,6 +208,7 @@ export const MatrixGrid = React.memo(function MatrixGrid({
             {widthBreakpoints.map((bp, index) => (
               <th
                 key={index}
+                role="columnheader"
                 style={{
                   border: "1px solid #e1e3e5",
                   padding: "4px 8px",
@@ -159,8 +277,9 @@ export const MatrixGrid = React.memo(function MatrixGrid({
         </thead>
         <tbody>
           {heightBreakpoints.map((heightBp, rowIndex) => (
-            <tr key={rowIndex}>
+            <tr key={rowIndex} role="row">
               <th
+                role="rowheader"
                 style={{
                   border: "1px solid #e1e3e5",
                   padding: "4px 8px",
@@ -203,15 +322,28 @@ export const MatrixGrid = React.memo(function MatrixGrid({
                 const cellKey = getCellKey(colIndex, rowIndex);
                 const cellValue = cells.get(cellKey);
                 const isEmpty = emptyCells.has(cellKey);
+                const isFocused = focusedRow === rowIndex && focusedCol === colIndex;
 
                 return (
                   <td
                     key={colIndex}
+                    role="gridcell"
+                    tabIndex={isFocused ? 0 : -1}
+                    ref={(el) => {
+                      if (el) {
+                        cellRefs.current.set(cellKey, el);
+                      } else {
+                        cellRefs.current.delete(cellKey);
+                      }
+                    }}
+                    onKeyDown={(e) => handleCellKeyDown(e, colIndex, rowIndex)}
                     style={{
                       border: "1px solid #e1e3e5",
                       padding: "4px 8px",
                       textAlign: "right",
                       background: isEmpty ? "#fff4f4" : "transparent",
+                      outline: isFocused ? "2px solid #2c6ecb" : "none",
+                      outlineOffset: "-2px",
                     }}
                   >
                     <input
@@ -222,19 +354,14 @@ export const MatrixGrid = React.memo(function MatrixGrid({
                       onChange={(e) =>
                         handleCellChange(colIndex, rowIndex, e.target.value)
                       }
+                      aria-label={`Price for ${widthBp} ${unit} width by ${heightBp} ${unit} height`}
+                      tabIndex={-1}
                       style={{
                         width: "80px",
                         textAlign: "right",
                         border: "none",
                         background: "transparent",
                         fontSize: "14px",
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.outline = "2px solid #2c6ecb";
-                        e.target.style.borderRadius = "2px";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.outline = "none";
                       }}
                     />
                   </td>
