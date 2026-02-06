@@ -44,3 +44,16 @@ export function normalizeProductId(id: string): string {
   // Convert numeric ID to GID format
   return `gid://shopify/Product/${id}`;
 }
+
+/**
+ * Validates request body for Draft Order creation endpoint.
+ */
+export const DraftOrderSchema = z.object({
+  productId: z.string().refine(
+    (id) => /^\d+$/.test(id) || /^gid:\/\/shopify\/Product\/\d+$/.test(id),
+    { message: "Product ID must be numeric or GID format" }
+  ),
+  width: z.number().positive("Width must be a positive number"),
+  height: z.number().positive("Height must be a positive number"),
+  quantity: z.number().int().positive().default(1),
+});
