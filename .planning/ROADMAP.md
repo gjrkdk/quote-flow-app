@@ -26,8 +26,8 @@ This milestone takes the shipped v1.0 MVP from development to production. The wi
 3. Widget renders correctly when imported from the published package
 
 Plans:
-- [ ] 07-01-PLAN.md — Prepare package metadata, README, LICENSE, and verify build
-- [ ] 07-02-PLAN.md — Authenticate with npm and publish @pricing-matrix/widget
+- [x] 07-01-PLAN.md — Prepare package metadata, README, LICENSE, and verify build
+- [x] 07-02-PLAN.md — Authenticate with npm and publish @gjrkdk/pricing-matrix-widget
 
 ---
 
