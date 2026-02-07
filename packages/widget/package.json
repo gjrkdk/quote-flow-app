@@ -1,5 +1,5 @@
 {
-  "name": "@pricing-matrix/widget",
+  "name": "@gjrkdk/pricing-matrix-widget",
   "version": "0.1.0",
   "description": "Drop-in React widget for Shopify dimension-based pricing with live price updates and Draft Order checkout",
   "type": "module",
