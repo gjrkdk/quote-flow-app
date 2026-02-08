@@ -50,7 +50,7 @@ Plans:
 4. REST API endpoints respond to authenticated requests
 
 Plans:
-- [ ] 08-01-PLAN.md — Configure Vercel adapter, Prisma dual-URL, build pipeline, and production TOML
+- [x] 08-01-PLAN.md — Configure Vercel adapter, Prisma dual-URL, build pipeline, and production TOML
 - [ ] 08-02-PLAN.md — Create Neon DB, production Shopify app, deploy to Vercel, verify
 
 ---
