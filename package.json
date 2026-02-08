@@ -14,7 +14,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "typecheck": "tsc --noEmit",
-    "vercel-build": "prisma generate && prisma migrate deploy && npm run build"
+    "vercel-build": "prisma generate && prisma migrate deploy && remix vite:build"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^5.8.0",
