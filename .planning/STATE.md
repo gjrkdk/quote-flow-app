@@ -1,60 +1,47 @@
-# Project State: Shopify Price Matrix App
+# Project State: Shopify Price Matrix App (QuoteFlow)
 
 **Last Updated:** 2026-02-08
-**Status:** v1.1 Milestone Complete
+**Status:** v1.1 Shipped — Planning next milestone
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-06)
+See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core Value:** Merchants can offer custom-dimension pricing on their headless Shopify storefronts without building their own pricing infrastructure
 
-**Current Focus:** v1.1 Publish & Polish — all phases complete, E2E verified in production
+**Current Focus:** Planning next milestone
 
 ## Current Position
 
-**Milestone:** v1.1 Publish & Polish
-**Phase:** 10 of 4 (E2E Production Verification)
-**Plan:** 2 of 2 complete
-**Status:** Phase 10 complete — full E2E flow verified in production
-**Last activity:** 2026-02-08 — Completed 10-02-PLAN.md (npm Widget Integration Test)
+**Milestone:** v1.1 Publish & Polish — SHIPPED
+**Next:** Not yet planned
+**Last activity:** 2026-02-08 — v1.1 milestone archived
 
-Progress: ██████████████████████████████ 100% (31/31 plans)
-[Phases 01-06: Complete] [Phase 07: Complete] [Phase 08: Complete] [Phase 09: Complete] [Phase 10: Complete]
+Progress:
+- v1.0 MVP: 6 phases, 23 plans — shipped 2026-02-06
+- v1.1 Publish & Polish: 4 phases, 8 plans — shipped 2026-02-08
 
 ## Archived
 
-- `.planning/milestones/v1.0-ROADMAP.md` — Full phase details
-- `.planning/milestones/v1.0-REQUIREMENTS.md` — All v1 requirements
-- `.planning/milestones/v1.0-MILESTONE-AUDIT.md` — Audit report
+- `.planning/milestones/v1.0-ROADMAP.md`
+- `.planning/milestones/v1.0-REQUIREMENTS.md`
+- `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
+- `.planning/milestones/v1.1-ROADMAP.md`
+- `.planning/milestones/v1.1-REQUIREMENTS.md`
 
 ## Accumulated Context
 
+- Production: https://quote-flow-one.vercel.app (Vercel fra1 + Neon EU Central)
+- Widget: @gjrkdk/pricing-matrix-widget@0.1.0 on npm
 - Billing gates disabled for testing (TODO markers in `billing.server.ts`)
-- Competitor research completed — Apippa is market leader, key gaps identified (true matrix grid, admin lookup, REST API, CSV import)
-- Template CSV file added at `public/template.csv`
-- Widget package prepared for npm: MIT license, comprehensive README (145 lines), all metadata complete
-- npm package verified at 194.7 kB tarball with pack/publish dry-run checks passing
-- Widget published to npm as @gjrkdk/pricing-matrix-widget@0.1.0 (scope changed from @pricing-matrix due to unavailability)
-- Local .npmrc added to override global GitHub Package Registry redirect
-- App renamed to QuoteFlow for production branding
-- Production deployment: https://quote-flow-one.vercel.app (Vercel fra1 + Neon EU Central)
-- Vercel builds use `remix vite:build` directly (Shopify CLI not available on Vercel)
-- Root .npmrc has legacy-peer-deps=true for vitest/@shopify/cli-kit peer dep conflict
-- Shopify App Store registration completed ($19 one-time fee, individual developer)
-- Public distribution selected for QuoteFlow (irreversible) — enables App Store + Billing API
-- App version quoteflow-6 deployed to Partner Dashboard via `shopify app deploy`
-- pg.defaults.ssl = true required for Neon — Shopify session storage ignores URL sslmode params
-- OAuth install flow verified on dynamic-pricing-demo.myshopify.com
-- Switched to `use_legacy_install_flow = true` for proper offline session tokens
-- Removed `unstable_newEmbeddedAuthStrategy` — incompatible with legacy install flow
-- CORS preflight fix: OPTIONS handled before auth middleware in API routes
-- E2E verified: install → matrix → Price API → Draft Order API → Shopify admin → widget rendering
+- In-memory rate limiting (Redis migration path documented for multi-instance)
+- `use_legacy_install_flow = true` required for proper offline session tokens
+- CORS preflight handled before authentication in REST API routes
 
 ## Session Continuity
 
-**Last session:** 2026-02-08 17:25:00 UTC
-**Stopped at:** Completed Phase 10 — v1.1 milestone fully verified
+**Last session:** 2026-02-08 17:30:00 UTC
+**Stopped at:** v1.1 milestone archived
 **Resume file:** None
 
 ---
