@@ -9,6 +9,13 @@ import {
 import { BillingReplacementBehavior } from "@shopify/shopify-api";
 import { PostgreSQLSessionStorage } from "@shopify/shopify-app-session-storage-postgresql";
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-01";
+import pg from "pg";
+
+// The Shopify session storage package creates pg.Pool without SSL options,
+// but Neon requires SSL. Setting pg.defaults.ssl ensures all pg connections use SSL.
+if (process.env.DATABASE_URL?.includes("neon.tech")) {
+  pg.defaults.ssl = true;
+}
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY || "",
