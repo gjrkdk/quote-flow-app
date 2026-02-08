@@ -84,7 +84,7 @@ Plans:
 
 **Goal:** Verify the complete flow works in production from install to Draft Order
 **Depends on:** Phases 07, 08, 09 (all prior work complete)
-**Plans:** TBD
+**Plans:** 2 plans
 
 **Requirements:**
 - VERIFY-01: Full end-to-end flow in production
@@ -96,6 +96,10 @@ Plans:
 3. REST API returns correct prices for the matrix
 4. Published widget fetches price and creates a Draft Order
 5. Draft Order appears in Shopify admin with correct pricing
+
+Plans:
+- [ ] 10-01-PLAN.md — Full E2E flow test (install, matrix, API, Draft Order)
+- [ ] 10-02-PLAN.md — npm widget external integration test
 
 ---
 
