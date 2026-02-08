@@ -15,12 +15,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Milestone:** v1.1 Publish & Polish
 **Phase:** 09 of 4 (Shopify Partner Dashboard Registration)
-**Plan:** 1 of 2 complete
-**Status:** Plan 09-01 complete — Public distribution selected, TOML deployed to Partner Dashboard
-**Last activity:** 2026-02-08 — Completed 09-01-PLAN.md (Public Distribution & TOML Deploy)
+**Plan:** 2 of 2 complete
+**Status:** Phase 09 complete — OAuth install flow verified on production
+**Last activity:** 2026-02-08 — Completed 09-02-PLAN.md (OAuth Install Flow Test)
 
-Progress: ██████████████████████████████ 100% (28/29 plans)
-[Phases 01-06: Complete] [Phase 07: Complete] [Phase 08: Complete] [Phase 09: 1/2]
+Progress: ██████████████████████████████ 100% (29/29 plans)
+[Phases 01-06: Complete] [Phase 07: Complete] [Phase 08: Complete] [Phase 09: Complete]
 
 ## Archived
 
@@ -44,11 +44,13 @@ Progress: ███████████████████████�
 - Shopify App Store registration completed ($19 one-time fee, individual developer)
 - Public distribution selected for QuoteFlow (irreversible) — enables App Store + Billing API
 - App version quoteflow-4 deployed to Partner Dashboard via `shopify app deploy`
+- pg.defaults.ssl = true required for Neon — Shopify session storage ignores URL sslmode params
+- OAuth install flow verified on dynamic-pricing-demo.myshopify.com
 
 ## Session Continuity
 
-**Last session:** 2026-02-08 14:09:00 UTC
-**Stopped at:** Completed 09-01-PLAN.md (Public Distribution & TOML Deploy)
+**Last session:** 2026-02-08 15:31:00 UTC
+**Stopped at:** Completed 09-02-PLAN.md (OAuth Install Flow Test)
 **Resume file:** None
 
 ---
