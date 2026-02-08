@@ -1,7 +1,7 @@
 # Project State: Shopify Price Matrix App
 
 **Last Updated:** 2026-02-08
-**Status:** v1.1 Milestone In Progress
+**Status:** v1.1 Milestone Complete
 
 ## Project Reference
 
@@ -9,18 +9,18 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core Value:** Merchants can offer custom-dimension pricing on their headless Shopify storefronts without building their own pricing infrastructure
 
-**Current Focus:** v1.1 Publish & Polish — production deploy, npm publish, App Store submission
+**Current Focus:** v1.1 Publish & Polish — all phases complete, E2E verified in production
 
 ## Current Position
 
 **Milestone:** v1.1 Publish & Polish
-**Phase:** 09 of 4 (Shopify Partner Dashboard Registration)
+**Phase:** 10 of 4 (E2E Production Verification)
 **Plan:** 2 of 2 complete
-**Status:** Phase 09 complete — OAuth install flow verified on production
-**Last activity:** 2026-02-08 — Completed 09-02-PLAN.md (OAuth Install Flow Test)
+**Status:** Phase 10 complete — full E2E flow verified in production
+**Last activity:** 2026-02-08 — Completed 10-02-PLAN.md (npm Widget Integration Test)
 
-Progress: ██████████████████████████████ 100% (29/29 plans)
-[Phases 01-06: Complete] [Phase 07: Complete] [Phase 08: Complete] [Phase 09: Complete]
+Progress: ██████████████████████████████ 100% (31/31 plans)
+[Phases 01-06: Complete] [Phase 07: Complete] [Phase 08: Complete] [Phase 09: Complete] [Phase 10: Complete]
 
 ## Archived
 
@@ -43,14 +43,18 @@ Progress: ███████████████████████�
 - Root .npmrc has legacy-peer-deps=true for vitest/@shopify/cli-kit peer dep conflict
 - Shopify App Store registration completed ($19 one-time fee, individual developer)
 - Public distribution selected for QuoteFlow (irreversible) — enables App Store + Billing API
-- App version quoteflow-4 deployed to Partner Dashboard via `shopify app deploy`
+- App version quoteflow-6 deployed to Partner Dashboard via `shopify app deploy`
 - pg.defaults.ssl = true required for Neon — Shopify session storage ignores URL sslmode params
 - OAuth install flow verified on dynamic-pricing-demo.myshopify.com
+- Switched to `use_legacy_install_flow = true` for proper offline session tokens
+- Removed `unstable_newEmbeddedAuthStrategy` — incompatible with legacy install flow
+- CORS preflight fix: OPTIONS handled before auth middleware in API routes
+- E2E verified: install → matrix → Price API → Draft Order API → Shopify admin → widget rendering
 
 ## Session Continuity
 
-**Last session:** 2026-02-08 15:31:00 UTC
-**Stopped at:** Completed 09-02-PLAN.md (OAuth Install Flow Test)
+**Last session:** 2026-02-08 17:25:00 UTC
+**Stopped at:** Completed Phase 10 — v1.1 milestone fully verified
 **Resume file:** None
 
 ---
