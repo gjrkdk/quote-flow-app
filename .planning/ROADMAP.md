@@ -59,8 +59,9 @@ Plans:
 ### Phase 09: Shopify Partner Dashboard Registration
 
 **Goal:** Register the app in Partner Dashboard so merchants can install via direct link
+**Status:** In Progress
 **Depends on:** Phase 08 (needs production URL for OAuth config)
-**Plans:** 2 plans
+**Plans:** 2 plans (1/2 complete)
 
 **Requirements:**
 - APP-01: App registered with correct OAuth redirects and scopes
@@ -74,7 +75,7 @@ Plans:
 4. After install, merchant lands on the embedded dashboard
 
 Plans:
-- [ ] 09-01-PLAN.md — Select Public distribution and deploy production TOML to Partner Dashboard
+- [x] 09-01-PLAN.md — Select Public distribution and deploy production TOML to Partner Dashboard
 - [ ] 09-02-PLAN.md — Test OAuth install flow on development store
 
 ---

@@ -14,13 +14,13 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 **Milestone:** v1.1 Publish & Polish
-**Phase:** 08 of 4 (Production Deploy to Vercel)
-**Plan:** 2 of 2 complete
-**Status:** Phase 08 complete — deployed to quote-flow-one.vercel.app
-**Last activity:** 2026-02-08 — Completed 08-02-PLAN.md (Production Deployment)
+**Phase:** 09 of 4 (Shopify Partner Dashboard Registration)
+**Plan:** 1 of 2 complete
+**Status:** Plan 09-01 complete — Public distribution selected, TOML deployed to Partner Dashboard
+**Last activity:** 2026-02-08 — Completed 09-01-PLAN.md (Public Distribution & TOML Deploy)
 
-Progress: ██████████████████████████████ 100% (27/27 plans)
-[Phases 01-06: Complete] [Phase 07: Complete] [Phase 08: Complete]
+Progress: ██████████████████████████████ 100% (28/29 plans)
+[Phases 01-06: Complete] [Phase 07: Complete] [Phase 08: Complete] [Phase 09: 1/2]
 
 ## Archived
 
@@ -41,11 +41,14 @@ Progress: ███████████████████████�
 - Production deployment: https://quote-flow-one.vercel.app (Vercel fra1 + Neon EU Central)
 - Vercel builds use `remix vite:build` directly (Shopify CLI not available on Vercel)
 - Root .npmrc has legacy-peer-deps=true for vitest/@shopify/cli-kit peer dep conflict
+- Shopify App Store registration completed ($19 one-time fee, individual developer)
+- Public distribution selected for QuoteFlow (irreversible) — enables App Store + Billing API
+- App version quoteflow-4 deployed to Partner Dashboard via `shopify app deploy`
 
 ## Session Continuity
 
-**Last session:** 2026-02-08 13:30:00 UTC
-**Stopped at:** Completed 08-02-PLAN.md (Production Deployment)
+**Last session:** 2026-02-08 14:09:00 UTC
+**Stopped at:** Completed 09-01-PLAN.md (Public Distribution & TOML Deploy)
 **Resume file:** None
 
 ---
