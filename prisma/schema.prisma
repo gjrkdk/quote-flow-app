@@ -31,6 +31,20 @@ enum GdprRequestType {
   @@map("gdpr_request_type")
 }
 
+enum ModifierType {
+  FIXED
+  PERCENTAGE
+
+  @@map("modifier_type")
+}
+
+enum GroupRequirement {
+  REQUIRED
+  OPTIONAL
+
+  @@map("group_requirement")
+}
+
 model Store {
   id                      String             @id @default(cuid())
   shop                    String             @unique
@@ -45,6 +59,7 @@ model Store {
   updatedAt               DateTime           @updatedAt @map("updated_at")
   matrices                PriceMatrix[]
   draftOrderRecords       DraftOrderRecord[]
+  optionGroups            OptionGroup[]
 
   @@map("stores")
 }
@@ -103,12 +118,13 @@ model MatrixCell {
 }
 
 model ProductMatrix {
-  id           Int         @id @default(autoincrement())
-  matrixId     String      @map("matrix_id")
-  productId    String      @map("product_id")
-  productTitle String      @map("product_title")
-  assignedAt   DateTime    @default(now()) @map("assigned_at")
-  matrix       PriceMatrix @relation(fields: [matrixId], references: [id], onDelete: Cascade)
+  id           Int                   @id @default(autoincrement())
+  matrixId     String                @map("matrix_id")
+  productId    String                @map("product_id")
+  productTitle String                @map("product_title")
+  assignedAt   DateTime              @default(now()) @map("assigned_at")
+  matrix       PriceMatrix           @relation(fields: [matrixId], references: [id], onDelete: Cascade)
+  optionGroups ProductOptionGroup[]
 
   @@unique([productId])
   @@index([matrixId])
@@ -135,4 +151,47 @@ model DraftOrderRecord {
   @@index([matrixId])
   @@index([shopifyDraftOrderId])
   @@map("draft_order_records")
+}
+
+model OptionGroup {
+  id          String                @id @default(cuid())
+  storeId     String                @map("store_id")
+  name        String
+  requirement GroupRequirement      @default(OPTIONAL)
+  createdAt   DateTime              @default(now()) @map("created_at")
+  updatedAt   DateTime              @updatedAt @map("updated_at")
+  store       Store                 @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  choices     OptionChoice[]
+  products    ProductOptionGroup[]
+
+  @@index([storeId])
+  @@map("option_groups")
+}
+
+model OptionChoice {
+  id            String        @id @default(cuid())
+  optionGroupId String        @map("option_group_id")
+  label         String
+  modifierType  ModifierType  @map("modifier_type")
+  modifierValue Int           @map("modifier_value")
+  isDefault     Boolean       @default(false) @map("is_default")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  optionGroup   OptionGroup   @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+
+  @@index([optionGroupId])
+  @@map("option_choices")
+}
+
+model ProductOptionGroup {
+  id            Int           @id @default(autoincrement())
+  productId     String        @map("product_id")
+  optionGroupId String        @map("option_group_id")
+  assignedAt    DateTime      @default(now()) @map("assigned_at")
+  product       ProductMatrix @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  optionGroup   OptionGroup   @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, optionGroupId])
+  @@index([productId])
+  @@index([optionGroupId])
+  @@map("product_option_groups")
 }
