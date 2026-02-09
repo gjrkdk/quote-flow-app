@@ -15,9 +15,9 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Milestone:** v1.2 Option Groups & App Store
 **Phase:** 11 of 16 (Data Model & Price Calculation Foundation)
-**Plan:** Ready to plan
-**Status:** Ready to plan
-**Last activity:** 2026-02-09 — v1.2 roadmap created
+**Plan:** 01 of 03 complete
+**Status:** In progress
+**Last activity:** 2026-02-09 — Completed 11-01 Database Schema for Option Groups
 
 Progress: [████████████████░░] 62% (10 of 16 phases complete)
 
@@ -29,10 +29,10 @@ Milestones:
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 31 (v1.0: 23 plans, v1.1: 8 plans)
+- Total plans completed: 32 (v1.0: 23 plans, v1.1: 8 plans, v1.2: 1 plan)
 - v1.0 duration: 4 days
 - v1.1 duration: 2 days
-- v1.2 duration: TBD
+- v1.2 duration: In progress
 
 **By Milestone:**
 
@@ -45,6 +45,7 @@ Milestones:
 **Recent Trend:**
 - v1.0 → v1.1: Faster (focused deployment work)
 - v1.2 expected: Similar to v1.0 (new features + App Store prep)
+| Phase 11 P01 | 148 | 2 tasks | 2 files |
 
 ## Archived
 
@@ -66,6 +67,7 @@ Milestones:
 - Percentage modifiers from base price, non-compounding (predictable calculations)
 - Integer (cents) arithmetic for all price calculations (avoid floating-point errors)
 - GraphQL Admin API migration mandatory (REST deprecated for App Store)
+- DIRECT_URL environment variable added to .env for local development (Phase 11: required by Prisma for schema validation)
 
 ### Known Technical Debt
 - Billing gates disabled for testing (TODO markers in `billing.server.ts`)
@@ -85,8 +87,8 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-02-09
-**Stopped at:** v1.2 roadmap created, ready to plan Phase 11
+**Last session:** 2026-02-09T20:44:40.186Z
+**Stopped at:** Completed 11-01-PLAN.md (Database Schema for Option Groups)
 **Resume file:** None
 
 ---
