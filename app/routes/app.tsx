@@ -30,6 +30,7 @@ export default function App() {
           Dashboard
         </Link>
         <Link to="/app/matrices">Matrices</Link>
+        <Link to="/app/option-groups">Option Groups</Link>
         <Link to="/app/settings">Settings</Link>
       </ui-nav-menu>
       <Outlet />
