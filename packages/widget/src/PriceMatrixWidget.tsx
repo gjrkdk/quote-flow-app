@@ -1,13 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import root from 'react-shadow';
 import { usePriceFetch } from './hooks/usePriceFetch';
 import { useDraftOrder } from './hooks/useDraftOrder';
+import { useOptionGroups } from './hooks/useOptionGroups';
 import { DimensionInput } from './components/DimensionInput';
 import { PriceDisplay } from './components/PriceDisplay';
 import { QuantitySelector } from './components/QuantitySelector';
 import { AddToCartButton } from './components/AddToCartButton';
+import { OptionGroupSelect } from './components/OptionGroupSelect';
 import { widgetStyles } from './styles';
-import type { PriceMatrixWidgetProps, AddToCartEvent } from './types';
+import type { PriceMatrixWidgetProps, AddToCartEvent, OptionSelection } from './types';
 
 /**
  * PriceMatrixWidget - Drop-in React component for dimension-based pricing.
@@ -33,6 +35,12 @@ export function PriceMatrixWidget(props: PriceMatrixWidgetProps) {
   // Quantity state (default 1)
   const [quantity, setQuantity] = useState(1);
 
+  // Option selections state
+  const [selections, setSelections] = useState<OptionSelection[]>([]);
+
+  // Option groups hook
+  const { groups, loading: groupsLoading } = useOptionGroups({ apiUrl, apiKey, productId });
+
   // Price fetching hook (includes width/height state)
   const {
     width,
@@ -46,10 +54,27 @@ export function PriceMatrixWidget(props: PriceMatrixWidgetProps) {
     currency,
     unit,
     dimensionRange,
-  } = usePriceFetch({ apiUrl, apiKey, productId }, quantity);
+  } = usePriceFetch({ apiUrl, apiKey, productId, optionSelections: selections }, quantity);
 
   // Draft Order creation hook
   const { createDraftOrder, creating, error: draftOrderError } = useDraftOrder({ apiUrl, apiKey });
+
+  // Initialize default selections for REQUIRED groups
+  useEffect(() => {
+    if (groups.length === 0) return;
+    const defaults: OptionSelection[] = [];
+    for (const group of groups) {
+      if (group.requirement === 'REQUIRED') {
+        const defaultChoice = group.choices.find(c => c.isDefault);
+        if (defaultChoice) {
+          defaults.push({ optionGroupId: group.id, choiceId: defaultChoice.id });
+        }
+      }
+    }
+    if (defaults.length > 0) {
+      setSelections(defaults);
+    }
+  }, [groups]);
 
   // Client-side dimension validation
   const widthNum = parseFloat(width);
@@ -79,6 +104,22 @@ export function PriceMatrixWidget(props: PriceMatrixWidgetProps) {
     return null;
   })();
 
+  // Update selection handler for option groups
+  const updateSelection = useCallback((groupId: string, choiceId: string | null) => {
+    setSelections(prev => {
+      const filtered = prev.filter(s => s.optionGroupId !== groupId);
+      if (choiceId) {
+        return [...filtered, { optionGroupId: groupId, choiceId }];
+      }
+      return filtered; // null = cleared (OPTIONAL group)
+    });
+  }, []);
+
+  // Validate required option groups
+  const hasAllRequiredOptions = groups
+    .filter(g => g.requirement === 'REQUIRED')
+    .every(g => selections.some(s => s.optionGroupId === g.id));
+
   // Add to Cart handler
   const handleAddToCart = useCallback(async () => {
     // Shouldn't happen (button should be disabled), but defensive check
@@ -90,6 +131,7 @@ export function PriceMatrixWidget(props: PriceMatrixWidgetProps) {
         width: widthNum,
         height: heightNum,
         quantity,
+        options: selections.length > 0 ? selections : undefined,
       });
 
       // Fire onAddToCart callback if provided
@@ -141,7 +183,8 @@ export function PriceMatrixWidget(props: PriceMatrixWidgetProps) {
   // - No price loaded yet
   // - Dimensions are invalid
   // - Draft Order is being created
-  const isAddToCartDisabled = !total || !!widthError || !!heightError || creating;
+  // - Required option groups not selected
+  const isAddToCartDisabled = !total || !!widthError || !!heightError || creating || (groups.length > 0 && !hasAllRequiredOptions);
 
   return (
     <root.div style={themeStyles}>
@@ -166,6 +209,16 @@ export function PriceMatrixWidget(props: PriceMatrixWidgetProps) {
           max={dimensionRange?.maxHeight ?? null}
           error={heightError}
         />
+
+        {groups.length > 0 && groups.map((group) => (
+          <OptionGroupSelect
+            key={group.id}
+            group={group}
+            value={selections.find(s => s.optionGroupId === group.id)?.choiceId ?? null}
+            onChange={(choiceId) => updateSelection(group.id, choiceId)}
+            currency={currency ?? 'USD'}
+          />
+        ))}
 
         <QuantitySelector quantity={quantity} onChange={setQuantity} />
 
