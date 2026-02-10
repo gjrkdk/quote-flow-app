@@ -207,11 +207,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // 6. Calculate price (with or without options)
     let unitPrice: number;
+    let basePriceDollars: number;
     let basePriceCents: number;
     let priceBreakdown: any;
 
     try {
-      basePriceCents = calculatePrice(width, height, productMatrix.matrixData);
+      basePriceDollars = calculatePrice(width, height, productMatrix.matrixData);
+      basePriceCents = Math.round(basePriceDollars * 100);
     } catch (error) {
       console.error("Price calculation error:", error);
       throw json(
@@ -253,10 +255,10 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       priceBreakdown = calculatePriceWithOptions(basePriceCents, modifiers);
-      unitPrice = priceBreakdown.totalCents;
+      unitPrice = priceBreakdown.totalCents / 100;
     } else {
       // No options: use base price
-      unitPrice = basePriceCents;
+      unitPrice = basePriceDollars;
     }
 
     // 7. Get store's shop domain
@@ -367,7 +369,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Add breakdown if options were used
     if (priceBreakdown) {
-      responseBody.basePrice = priceBreakdown.basePriceCents;
+      responseBody.basePrice = priceBreakdown.basePriceCents / 100;
       responseBody.optionModifiers = priceBreakdown.modifiers.map((m: any) => {
         // Split label on ": " to get group name and choice label
         const [groupName, choiceLabel] = m.label.split(": ");
@@ -376,7 +378,7 @@ export async function action({ request }: ActionFunctionArgs) {
           choice: choiceLabel,
           modifierType: m.type,
           modifierValue: m.originalValue,
-          appliedAmount: m.appliedAmountCents,
+          appliedAmount: m.appliedAmountCents / 100,
         };
       });
     }
