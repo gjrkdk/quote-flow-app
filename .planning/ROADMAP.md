@@ -154,8 +154,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 13-01-PLAN.md — Validation schemas and option validator service
-- [ ] 13-02-PLAN.md — Price endpoint and draft orders extension with options
+- [x] 13-01-PLAN.md — Validation schemas and option validator service
+- [x] 13-02-PLAN.md — Price endpoint and draft orders extension with options
 
 #### Phase 14: Widget Integration
 **Goal**: Widget renders option dropdowns with live price updates
@@ -221,7 +221,7 @@ Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 | 10. Production Verification | v1.1 | 2/2 | Complete | 2026-02-08 |
 | 11. Data Model & Price Calculation Foundation | v1.2 | 3/3 | Complete | 2026-02-09 |
 | 12. Admin UI for Option Groups | v1.2 | 3/3 | Complete | 2026-02-09 |
-| 13. REST API Extension | v1.2 | 0/2 | Not started | - |
+| 13. REST API Extension | v1.2 | 2/2 | Complete | 2026-02-10 |
 | 14. Widget Integration | v1.2 | 0/TBD | Not started | - |
 | 15. GraphQL Migration & GDPR | v1.2 | 0/TBD | Not started | - |
 | 16. Performance Audit & App Store Submission | v1.2 | 0/TBD | Not started | - |

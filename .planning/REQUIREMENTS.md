@@ -24,10 +24,10 @@ Requirements for milestone v1.2: Option Groups & App Store. Each maps to roadmap
 
 ### API
 
-- [ ] **API-01**: REST API accepts option selections alongside dimensions and returns the modified total price
-- [ ] **API-02**: REST API validates that option selections match the product's assigned option groups
-- [ ] **API-03**: Draft Orders include selected options as line item metadata for merchant visibility
-- [ ] **API-04**: Existing API calls work without options (backward compatible)
+- [x] **API-01**: REST API accepts option selections alongside dimensions and returns the modified total price
+- [x] **API-02**: REST API validates that option selections match the product's assigned option groups
+- [x] **API-03**: Draft Orders include selected options as line item metadata for merchant visibility
+- [x] **API-04**: Existing API calls work without options (backward compatible)
 
 ### Widget
 
