@@ -167,10 +167,12 @@ Plans:
   3. Widget shows price modifier next to each option value (e.g. "+$15.00", "+20%")
   4. Widget works correctly with products that have no option groups (backward compatible)
   5. Widget provides accessible keyboard navigation for option dropdowns
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 14-01: TBD during phase planning
+- [ ] 14-01-PLAN.md — REST API endpoint for product options + widget type extensions
+- [ ] 14-02-PLAN.md — useOptionGroups hook, OptionGroupSelect component, usePriceFetch extension, CSS styles
+- [ ] 14-03-PLAN.md — Main widget integration with option groups and draft order extension
 
 #### Phase 15: GraphQL Migration & GDPR
 **Goal**: Shopify Admin API calls migrated to GraphQL with functional GDPR webhooks
