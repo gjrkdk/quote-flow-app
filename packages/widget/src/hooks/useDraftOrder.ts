@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { DraftOrderApiResponse } from '../types';
+import type { DraftOrderApiResponse, OptionSelection } from '../types';
 
 interface UseDraftOrderOptions {
   apiUrl: string;
@@ -11,6 +11,7 @@ interface CreateDraftOrderParams {
   width: number;
   height: number;
   quantity: number;
+  options?: OptionSelection[];
 }
 
 interface UseDraftOrderReturn {
@@ -37,7 +38,7 @@ export function useDraftOrder(options: UseDraftOrderOptions): UseDraftOrderRetur
 
   const createDraftOrder = useCallback(
     async (params: CreateDraftOrderParams): Promise<DraftOrderApiResponse> => {
-      const { productId, width, height, quantity } = params;
+      const { productId, width, height, quantity, options } = params;
 
       setCreating(true);
       setError(null);
@@ -45,18 +46,26 @@ export function useDraftOrder(options: UseDraftOrderOptions): UseDraftOrderRetur
       try {
         const url = `${apiUrl}/api/v1/draft-orders`;
 
+        // Build POST body with optional options field
+        const body: Record<string, unknown> = {
+          productId,
+          width,
+          height,
+          quantity,
+        };
+
+        // Include options only if provided and not empty
+        if (options && options.length > 0) {
+          body.options = options;
+        }
+
         const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-API-Key': apiKey,
           },
-          body: JSON.stringify({
-            productId,
-            width,
-            height,
-            quantity,
-          }),
+          body: JSON.stringify(body),
         });
 
         if (!response.ok) {
