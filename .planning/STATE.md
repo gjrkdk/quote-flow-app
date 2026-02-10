@@ -15,11 +15,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Milestone:** v1.2 Option Groups & App Store
 **Phase:** 14 of 16 (Widget Integration)
-**Plan:** 2 of 3 (complete)
-**Status:** Phase 14 Plan 02 complete - Widget option group components created
-**Last activity:** 2026-02-10 — Completed 14-02-PLAN.md (Widget Option Group Components)
+**Plan:** 3 of 3 (complete)
+**Status:** Phase 14 complete - Widget integration with option groups finished
+**Last activity:** 2026-02-10 — Completed 14-03-PLAN.md (Widget Main Component Integration)
 
-Progress: [█████████████████████] 81% (14 of 16 phases in progress, 13 complete)
+Progress: [█████████████████████] 88% (14 of 16 phases complete)
 
 Milestones:
 - v1.0 MVP: 6 phases, 23 plans — shipped 2026-02-06
@@ -29,7 +29,7 @@ Milestones:
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 41 (v1.0: 23 plans, v1.1: 8 plans, v1.2: 10 plans)
+- Total plans completed: 42 (v1.0: 23 plans, v1.1: 8 plans, v1.2: 11 plans)
 - v1.0 duration: 4 days
 - v1.1 duration: 2 days
 - v1.2 duration: In progress
@@ -58,6 +58,7 @@ Milestones:
 | Phase 13 P02 | 208 | 2 tasks | 4 files |
 | Phase 14 P01 | 102 | 2 tasks | 2 files |
 | Phase 14 P02 | 109 | 2 tasks | 4 files |
+| Phase 14 P03 | 129 | 2 tasks | 2 files |
 
 ## Archived
 
@@ -100,6 +101,8 @@ Milestones:
 - Extend PriceApiResponse and DraftOrderApiResponse with optional fields (Phase 14-01: backward compatible)
 - Use native HTML select for option groups (Phase 14-02: better accessibility and mobile support than custom dropdown)
 - No debouncing for option selection changes (Phase 14-02: immediate price refetch unlike debounced dimensions)
+- Pre-select default choices for REQUIRED groups on mount (Phase 14-03: improves UX, ensures valid initial state)
+- Pass undefined (not empty array) when no selections (Phase 14-03: cleaner API semantics)
 
 ### Known Technical Debt
 - Billing gates disabled for testing (TODO markers in `billing.server.ts`)
@@ -119,8 +122,8 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-02-10T20:21:46.200Z
-**Stopped at:** Completed 14-02-PLAN.md
+**Last session:** 2026-02-10T20:26:15Z
+**Stopped at:** Completed 14-03-PLAN.md
 **Resume file:** None
 
 ---
