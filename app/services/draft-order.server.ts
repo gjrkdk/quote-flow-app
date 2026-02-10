@@ -48,6 +48,10 @@ export interface SubmitDraftOrderInput {
   quantity: number;
   unitPrice: number;
   unit: string; // "mm" or "cm" for display
+  options?: Array<{
+    optionGroupName: string;
+    choiceLabel: string;
+  }>;
 }
 
 function formatDimension(value: number, unit: string): string {
@@ -75,10 +79,27 @@ export async function submitDraftOrder(
     quantity,
     unitPrice,
     unit,
+    options,
   } = input;
 
   const widthDisplay = formatDimension(width, unit);
   const heightDisplay = formatDimension(height, unit);
+
+  // Build custom attributes: start with dimensions
+  const customAttributes = [
+    { key: "Width", value: widthDisplay },
+    { key: "Height", value: heightDisplay },
+  ];
+
+  // Add option selections if provided
+  if (options && options.length > 0) {
+    for (const option of options) {
+      customAttributes.push({
+        key: option.optionGroupName,
+        value: option.choiceLabel,
+      });
+    }
+  }
 
   // Create Draft Order via GraphQL with retry logic.
   // Use a custom line item (title + originalUnitPrice) instead of variantId,
@@ -89,10 +110,7 @@ export async function submitDraftOrder(
         title: productTitle,
         quantity,
         originalUnitPrice: unitPrice,
-        customAttributes: [
-          { key: "Width", value: widthDisplay },
-          { key: "Height", value: heightDisplay },
-        ],
+        customAttributes,
       },
     ],
     tags: ["price-matrix"],
@@ -186,6 +204,7 @@ export async function submitDraftOrder(
           quantity,
           calculatedPrice: unitPrice,
           totalPrice: parseFloat(draftOrder.totalPrice),
+          optionSelections: options ?? null,
         },
       });
 

@@ -8,8 +8,9 @@
 import { json, type ActionFunctionArgs } from "@remix-run/node";
 import { authenticateApiKey } from "~/utils/api-auth.server";
 import {
-  DraftOrderSchema,
+  DraftOrderWithOptionsSchema,
   normalizeProductId,
+  type OptionSelection,
 } from "~/validators/api.validators";
 import { checkRateLimit, getRateLimitHeaders } from "~/utils/rate-limit.server";
 import { lookupProductMatrix } from "~/services/product-matrix-lookup.server";
@@ -20,6 +21,11 @@ import {
 import { submitDraftOrder } from "~/services/draft-order.server";
 import { prisma } from "~/db.server";
 import { sessionStorage } from "~/shopify.server";
+import { validateOptionSelections } from "~/services/option-validator.server";
+import {
+  calculatePriceWithOptions,
+  type PriceModifier,
+} from "~/services/option-price-calculator.server";
 
 /**
  * Adds CORS headers to a response to allow cross-origin requests.
@@ -126,7 +132,7 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    const validation = DraftOrderSchema.safeParse(body);
+    const validation = DraftOrderWithOptionsSchema.safeParse(body);
     if (!validation.success) {
       throw json(
         {
@@ -140,7 +146,7 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    const { productId, width, height, quantity } = validation.data;
+    const { productId, width, height, quantity, options } = validation.data;
     const normalizedProductId = normalizeProductId(productId);
 
     // 4. Validate dimensions (business logic)
@@ -155,6 +161,31 @@ export async function action({ request }: ActionFunctionArgs) {
         },
         { status: 400 }
       );
+    }
+
+    // 4a. Validate option selections if provided
+    let validatedGroups: any[] | undefined;
+
+    if (options && options.length > 0) {
+      const validationResult = await validateOptionSelections(
+        normalizedProductId,
+        options,
+        store.id
+      );
+
+      if (!validationResult.valid) {
+        throw json(
+          {
+            type: "about:blank",
+            title: "Bad Request",
+            status: 400,
+            detail: validationResult.error || "Invalid option selections",
+          },
+          { status: 400 }
+        );
+      }
+
+      validatedGroups = validationResult.validatedGroups;
     }
 
     // 5. Look up product matrix
@@ -174,10 +205,13 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    // 6. Calculate price
+    // 6. Calculate price (with or without options)
     let unitPrice: number;
+    let basePriceCents: number;
+    let priceBreakdown: any;
+
     try {
-      unitPrice = calculatePrice(width, height, productMatrix.matrixData);
+      basePriceCents = calculatePrice(width, height, productMatrix.matrixData);
     } catch (error) {
       console.error("Price calculation error:", error);
       throw json(
@@ -189,6 +223,40 @@ export async function action({ request }: ActionFunctionArgs) {
         },
         { status: 500 }
       );
+    }
+
+    // Build option metadata for Draft Order
+    let optionMetadata: Array<{ optionGroupName: string; choiceLabel: string }> | undefined;
+
+    // Calculate with options if provided
+    if (options && options.length > 0 && validatedGroups) {
+      // Build price modifiers from selections and validated groups
+      const modifiers: PriceModifier[] = [];
+      optionMetadata = [];
+
+      for (const selection of options) {
+        const group = validatedGroups.find((g: any) => g.id === selection.optionGroupId);
+        if (group) {
+          const choice = group.choices.find((c: any) => c.id === selection.choiceId);
+          if (choice) {
+            modifiers.push({
+              type: choice.modifierType,
+              value: choice.modifierValue,
+              label: `${group.name}: ${choice.label}`,
+            });
+            optionMetadata.push({
+              optionGroupName: group.name,
+              choiceLabel: choice.label,
+            });
+          }
+        }
+      }
+
+      priceBreakdown = calculatePriceWithOptions(basePriceCents, modifiers);
+      unitPrice = priceBreakdown.totalCents;
+    } else {
+      // No options: use base price
+      unitPrice = basePriceCents;
     }
 
     // 7. Get store's shop domain
@@ -264,6 +332,7 @@ export async function action({ request }: ActionFunctionArgs) {
       quantity,
       unitPrice,
       unit: productMatrix.unit,
+      options: optionMetadata,
     });
 
     if (!result.success) {
@@ -281,25 +350,41 @@ export async function action({ request }: ActionFunctionArgs) {
     // 12. Return success response with CORS and rate limit headers
     const rateLimitHeaders = getRateLimitHeaders(store.id);
 
-    const response = json(
-      {
-        draftOrderId: result.draftOrder!.id,
-        name: result.draftOrder!.name,
-        checkoutUrl: result.draftOrder!.invoiceUrl,
-        total: result.draftOrder!.totalPrice,
-        price: unitPrice,
-        dimensions: {
-          width,
-          height,
-          unit: productMatrix.unit,
-        },
-        quantity,
+    // Build response based on whether options were provided
+    const responseBody: any = {
+      draftOrderId: result.draftOrder!.id,
+      name: result.draftOrder!.name,
+      checkoutUrl: result.draftOrder!.invoiceUrl,
+      total: result.draftOrder!.totalPrice,
+      price: unitPrice,
+      dimensions: {
+        width,
+        height,
+        unit: productMatrix.unit,
       },
-      {
-        status: 201,
-        headers: rateLimitHeaders,
-      }
-    );
+      quantity,
+    };
+
+    // Add breakdown if options were used
+    if (priceBreakdown) {
+      responseBody.basePrice = priceBreakdown.basePriceCents;
+      responseBody.optionModifiers = priceBreakdown.modifiers.map((m: any) => {
+        // Split label on ": " to get group name and choice label
+        const [groupName, choiceLabel] = m.label.split(": ");
+        return {
+          optionGroup: groupName,
+          choice: choiceLabel,
+          modifierType: m.type,
+          modifierValue: m.originalValue,
+          appliedAmount: m.appliedAmountCents,
+        };
+      });
+    }
+
+    const response = json(responseBody, {
+      status: 201,
+      headers: rateLimitHeaders,
+    });
 
     return withCors(response);
   } catch (error) {

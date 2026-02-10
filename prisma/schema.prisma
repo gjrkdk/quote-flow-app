@@ -143,6 +143,7 @@ model DraftOrderRecord {
   quantity            Int
   calculatedPrice     Float       @map("calculated_price")
   totalPrice          Float       @map("total_price")
+  optionSelections    Json?       @map("option_selections")
   createdAt           DateTime    @default(now()) @map("created_at")
   store               Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
   matrix              PriceMatrix @relation(fields: [matrixId], references: [id], onDelete: Cascade)
