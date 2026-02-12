@@ -2,8 +2,10 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { GdprRequestType, type Prisma } from "@prisma/client";
 import { authenticate } from "../shopify.server";
 import { prisma } from "../db.server";
+import { enqueueJob } from "~/services/job-queue.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  const startTime = Date.now();
   const { topic, shop, payload } = await authenticate.webhook(request);
 
   const gdprTopicMap: Record<string, GdprRequestType> = {
@@ -25,23 +27,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   switch (topic) {
     case "CUSTOMERS_DATA_REQUEST":
-      // Shopify requires acknowledgement; customer data collection
-      // will be implemented when the app stores customer-specific data.
+      // App does not store customer-specific data. Acknowledge receipt per Shopify requirements.
       break;
 
     case "CUSTOMERS_REDACT":
-      await prisma.gdprRequest.updateMany({
-        where: { shop, type: GdprRequestType.CUSTOMERS_REDACT, processedAt: null },
-        data: { processedAt: new Date() },
-      });
+      await enqueueJob("customer_redact", { shop });
       break;
 
     case "SHOP_REDACT":
-      await prisma.store.deleteMany({ where: { shop } });
-      await prisma.gdprRequest.updateMany({
-        where: { shop, type: GdprRequestType.SHOP_REDACT, processedAt: null },
-        data: { processedAt: new Date() },
-      });
+      await enqueueJob("shop_redact", { shop });
       break;
 
     case "APP_UNINSTALLED":
@@ -49,5 +43,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       break;
   }
 
+  console.log(`[Webhook] ${topic} processed in ${Date.now() - startTime}ms`);
   return new Response(null, { status: 200 });
 };
