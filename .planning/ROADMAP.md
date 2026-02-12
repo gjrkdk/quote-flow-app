@@ -188,8 +188,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 15-01-PLAN.md — JobQueue model, job queue service, and GDPR deletion service
-- [ ] 15-02-PLAN.md — Webhook async refactor and Vercel Cron endpoint
+- [x] 15-01-PLAN.md — JobQueue model, job queue service, and GDPR deletion service
+- [x] 15-02-PLAN.md — Webhook async refactor and Vercel Cron endpoint
 
 #### Phase 16: Performance Audit & App Store Submission
 **Goal**: App submitted to Shopify App Store and passes performance standards
@@ -227,5 +227,5 @@ Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 | 12. Admin UI for Option Groups | v1.2 | 3/3 | Complete | 2026-02-09 |
 | 13. REST API Extension | v1.2 | 2/2 | Complete | 2026-02-10 |
 | 14. Widget Integration | v1.2 | 4/4 | Complete | 2026-02-10 |
-| 15. GraphQL Migration & GDPR | v1.2 | 0/TBD | Not started | - |
+| 15. GraphQL Migration & GDPR | v1.2 | 2/2 | Complete | 2026-02-12 |
 | 16. Performance Audit & App Store Submission | v1.2 | 0/TBD | Not started | - |
