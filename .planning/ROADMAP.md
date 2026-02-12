@@ -201,10 +201,12 @@ Plans:
   3. Test credentials provided for reviewers with working demo store
   4. App submitted to Shopify App Store for review
   5. Database has proper indexes on foreign keys (storeId, productId, optionGroupId)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 16-01: TBD during phase planning
+- [ ] 16-01-PLAN.md — Database index verification and Lighthouse CI setup
+- [ ] 16-02-PLAN.md — App listing materials and screenshot automation
+- [ ] 16-03-PLAN.md — Pre-submission checklist and App Store submission
 
 ## Progress
 
