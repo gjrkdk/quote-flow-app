@@ -15,6 +15,7 @@
     "prisma:migrate": "prisma migrate dev",
     "typecheck": "tsc --noEmit",
     "lighthouse": "lhci autorun",
+    "screenshots": "npx tsx scripts/generate-screenshots.ts",
     "vercel-build": "prisma generate && prisma migrate deploy && remix vite:build"
   },
   "dependencies": {
