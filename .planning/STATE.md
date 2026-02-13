@@ -76,6 +76,7 @@ Milestones:
 | 002 | Create privacy policy page at /privacy for App Store submission                    | 2026-02-13 | 4a03fe7 | [002-create-privacy-policy-url](./quick/2-create-privacy-policy-url-that-is-needed/)             |
 | 003 | Add ability to edit matrix title after creation via inline edit UI                | 2026-02-13 | 0090b4d | [003-add-ability-to-edit-matrix-title](./quick/3-add-ability-to-edit-matrix-title-after-c/)      |
 | 004 | Make matrix list items bigger using ResourceList instead of condensed IndexTable   | 2026-02-13 | e509ea9 | [004-make-matrix-list-items-bigger](./quick/4-make-the-created-matrix-list-items-bigge/)         |
+| 005 | Show Duplicate and Delete actions always visible on matrix and option group cards  | 2026-02-13 | 881fe38 | [005-show-duplicate-delete-actions-always-vis](./quick/5-show-duplicate-delete-actions-always-vis/) |
 
 ### Blockers/Concerns
 
@@ -84,7 +85,7 @@ None.
 ## Session Continuity
 
 **Last session:** 2026-02-13
-**Stopped at:** Completed quick task 004 - Make matrix list items bigger with ResourceList
+**Stopped at:** Completed quick task 005 - Show Duplicate and Delete actions always visible
 **Resume file:** None
 
 ---
