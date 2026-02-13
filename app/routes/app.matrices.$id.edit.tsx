@@ -582,8 +582,14 @@ export default function MatrixEdit() {
   const testFetcher = useFetcher<typeof action>();
 
   // Mark as dirty when data changes (exclude name - it's saved separately)
+  // Skip the initial render by tracking whether we've mounted
+  const [hasMounted, setHasMounted] = useState(false);
   useEffect(() => {
-    setIsDirty(true);
+    if (hasMounted) {
+      setIsDirty(true);
+    } else {
+      setHasMounted(true);
+    }
   }, [widthBreakpoints, heightBreakpoints, cells]);
 
   // Handle cell change
@@ -885,7 +891,7 @@ export default function MatrixEdit() {
   }, [name]);
 
   const handleNameKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
         e.preventDefault();
         handleSaveName();
@@ -950,14 +956,15 @@ export default function MatrixEdit() {
             </Text>
             {isEditingName ? (
               <BlockStack gap="300">
-                <TextField
-                  label=""
-                  value={editName}
-                  onChange={setEditName}
-                  autoComplete="off"
-                  autoFocus
-                  onKeyDown={handleNameKeyDown}
-                />
+                <div onKeyDown={handleNameKeyDown}>
+                  <TextField
+                    label=""
+                    value={editName}
+                    onChange={setEditName}
+                    autoComplete="off"
+                    autoFocus
+                  />
+                </div>
                 <InlineStack gap="200">
                   <Button
                     variant="primary"
