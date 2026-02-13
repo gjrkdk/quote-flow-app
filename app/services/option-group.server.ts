@@ -194,6 +194,48 @@ export async function deleteOptionGroup(id: string, storeId: string) {
 }
 
 /**
+ * Duplicates an option group with all its choices.
+ *
+ * @param id - Option group ID to duplicate
+ * @param storeId - Store ID for ownership validation
+ * @returns Duplicated option group with choices, or null if not found or unauthorized
+ */
+export async function duplicateOptionGroup(id: string, storeId: string) {
+  // Verify ownership
+  const original = await prisma.optionGroup.findUnique({
+    where: { id },
+    include: { choices: true },
+  });
+
+  if (!original || original.storeId !== storeId) {
+    return null;
+  }
+
+  // Create duplicate with all choices in a transaction
+  const duplicate = await prisma.$transaction(async (tx) => {
+    const newGroup = await tx.optionGroup.create({
+      data: {
+        storeId: original.storeId,
+        name: `${original.name} (copy)`,
+        requirement: original.requirement,
+        choices: {
+          create: original.choices.map((choice) => ({
+            label: choice.label,
+            modifierType: choice.modifierType,
+            modifierValue: choice.modifierValue,
+            isDefault: choice.isDefault,
+          })),
+        },
+      },
+      include: { choices: true },
+    });
+    return newGroup;
+  });
+
+  return duplicate;
+}
+
+/**
  * Assigns an option group to a product.
  * Enforces cap of 5 groups per product.
  *
