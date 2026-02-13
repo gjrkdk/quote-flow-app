@@ -559,6 +559,12 @@ export default function MatrixEdit() {
   const [emptyCells, setEmptyCells] = useState<Set<string>>(new Set());
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  // Banner state (auto-dismiss)
+  const [showSaveBanner, setShowSaveBanner] = useState(false);
+  const [showRenameBanner, setShowRenameBanner] = useState(false);
+  const [showRenameError, setShowRenameError] = useState<string | null>(null);
+  const [showSaveError, setShowSaveError] = useState<string | null>(null);
+
   // Rename state
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState(name);
@@ -803,11 +809,19 @@ export default function MatrixEdit() {
     fetcher.submit(formData, { method: "post" });
   }, [name, widthBreakpoints, heightBreakpoints, cells, fetcher]);
 
-  // Reset dirty state on successful save
+  // Reset dirty state on successful save and show banner
   useEffect(() => {
     if (fetcher.data && "success" in fetcher.data && fetcher.data.success) {
       setIsDirty(false);
       setValidationError(null);
+      setShowSaveBanner(true);
+      setShowSaveError(null);
+      const timer = setTimeout(() => setShowSaveBanner(false), 4000);
+      return () => clearTimeout(timer);
+    }
+    if (fetcher.data && "error" in fetcher.data) {
+      setShowSaveError(String(fetcher.data.error));
+      setShowSaveBanner(false);
     }
   }, [fetcher.data]);
 
@@ -913,6 +927,14 @@ export default function MatrixEdit() {
     ) {
       setName(editName);
       setIsEditingName(false);
+      setShowRenameBanner(true);
+      setShowRenameError(null);
+      const timer = setTimeout(() => setShowRenameBanner(false), 4000);
+      return () => clearTimeout(timer);
+    }
+    if (renameFetcher.data && "error" in renameFetcher.data) {
+      setShowRenameError(String(renameFetcher.data.error));
+      setShowRenameBanner(false);
     }
   }, [renameFetcher.data, editName]);
 
@@ -950,6 +972,22 @@ export default function MatrixEdit() {
       }
     >
       <BlockStack gap="400">
+        {showSaveError && (
+          <Banner tone="critical" onDismiss={() => setShowSaveError(null)}>{showSaveError}</Banner>
+        )}
+
+        {showSaveBanner && (
+          <Banner tone="success" onDismiss={() => setShowSaveBanner(false)}>Matrix saved successfully</Banner>
+        )}
+
+        {showRenameError && (
+          <Banner tone="critical" onDismiss={() => setShowRenameError(null)}>{showRenameError}</Banner>
+        )}
+
+        {showRenameBanner && (
+          <Banner tone="success" onDismiss={() => setShowRenameBanner(false)}>Matrix name updated successfully</Banner>
+        )}
+
         <Card>
           <BlockStack gap="300">
             <Text as="h2" variant="headingMd">
@@ -990,22 +1028,6 @@ export default function MatrixEdit() {
             )}
           </BlockStack>
         </Card>
-
-        {renameFetcher.data && "error" in renameFetcher.data && (
-          <Banner tone="critical">{renameFetcher.data.error}</Banner>
-        )}
-
-        {renameFetcher.data && "success" in renameFetcher.data && renameFetcher.data.success && (
-          <Banner tone="success">Matrix name updated successfully</Banner>
-        )}
-
-        {fetcher.data && "error" in fetcher.data && (
-          <Banner tone="critical">{fetcher.data.error}</Banner>
-        )}
-
-        {fetcher.data && "success" in fetcher.data && fetcher.data.success && (
-          <Banner tone="success">Matrix saved successfully</Banner>
-        )}
 
         {validationError && <Banner tone="warning">{validationError}</Banner>}
 
