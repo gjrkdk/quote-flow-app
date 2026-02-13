@@ -6,14 +6,15 @@ import {
   Box,
   Card,
   EmptyState,
-  IndexTable,
   Text,
   Modal,
   BlockStack,
   InlineStack,
   Button,
+  ResourceList,
+  ResourceItem,
 } from "@shopify/polaris";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { BreakpointAxis } from "@prisma/client";
 import { authenticate } from "~/shopify.server";
 import { prisma } from "~/db.server";
@@ -156,9 +157,6 @@ export default function MatricesIndex() {
   const [matrixToDelete, setMatrixToDelete] = useState<Matrix | null>(null);
   const [deletedMatrixId, setDeletedMatrixId] = useState<string | null>(null);
 
-  // Refs for focus management
-  const rowRefs = useRef<Map<string, HTMLSpanElement>>(new Map());
-
   const handleRowClick = useCallback(
     (matrixId: string) => {
       navigate(`/app/matrices/${matrixId}/edit`);
@@ -209,15 +207,6 @@ export default function MatricesIndex() {
             emptyStateButton.focus();
           }
         }, 100);
-      } else {
-        // Matrix was successfully deleted - focus on the first matrix in the list
-        const firstMatrix = matrices[0];
-        if (firstMatrix) {
-          const rowElement = rowRefs.current.get(firstMatrix.id);
-          if (rowElement) {
-            rowElement.focus();
-          }
-        }
       }
 
       setDeletedMatrixId(null);
@@ -247,69 +236,7 @@ export default function MatricesIndex() {
     );
   }
 
-  // Table view when matrices exist
-  const rowMarkup = matrices.map((matrix, index) => (
-    <IndexTable.Row
-      id={matrix.id}
-      key={matrix.id}
-      position={index}
-      onClick={() => handleRowClick(matrix.id)}
-    >
-      <IndexTable.Cell>
-        <span
-          ref={(el) => {
-            if (el) {
-              rowRefs.current.set(matrix.id, el);
-            } else {
-              rowRefs.current.delete(matrix.id);
-            }
-          }}
-          tabIndex={-1}
-          style={{ outline: "none" }}
-        >
-          <Text as="span" fontWeight="semibold">
-            {matrix.name}
-          </Text>
-        </span>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        {matrix.widthCount} x {matrix.heightCount}
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        {matrix.productCount} {matrix.productCount === 1 ? "product" : "products"}
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        {new Date(matrix.updatedAt).toLocaleDateString()}
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <div onClick={(e) => e.stopPropagation()}>
-          <InlineStack gap="300">
-            <Button
-              variant="plain"
-              size="slim"
-              onClick={() => handleDuplicateClick(matrix.id)}
-              loading={
-                fetcher.state === "submitting" &&
-                fetcher.formData?.get("matrixId") === matrix.id &&
-                fetcher.formData?.get("intent") === "duplicate"
-              }
-            >
-              Duplicate
-            </Button>
-            <Button
-              variant="plain"
-              size="slim"
-              tone="critical"
-              onClick={() => handleDeleteClick(matrix)}
-            >
-              Delete
-            </Button>
-          </InlineStack>
-        </div>
-      </IndexTable.Cell>
-    </IndexTable.Row>
-  ));
-
+  // Resource list view when matrices exist
   return (
     <Page
       title="Matrices"
@@ -319,22 +246,44 @@ export default function MatricesIndex() {
       }}
     >
       <Box paddingInline={{ xs: "200", md: "400" }}>
-        <Card padding="0">
-          <IndexTable
+        <Card>
+          <ResourceList
             resourceName={{ singular: "matrix", plural: "matrices" }}
-            itemCount={matrices.length}
-            headings={[
-              { title: "Name" },
-              { title: "Grid size" },
-              { title: "Products" },
-              { title: "Last edited" },
-              { title: "Actions" },
-            ]}
-            selectable={false}
-            condensed
-          >
-            {rowMarkup}
-          </IndexTable>
+            items={matrices}
+            renderItem={(matrix) => (
+              <ResourceItem
+                id={matrix.id}
+                onClick={() => handleRowClick(matrix.id)}
+                shortcutActions={[
+                  {
+                    content: "Duplicate",
+                    onAction: () => handleDuplicateClick(matrix.id),
+                  },
+                  {
+                    content: "Delete",
+                    onAction: () => handleDeleteClick(matrix),
+                  },
+                ]}
+              >
+                <Text as="h3" variant="headingSm" fontWeight="bold">
+                  {matrix.name}
+                </Text>
+                <Box paddingBlockStart="100">
+                  <InlineStack gap="400">
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      {matrix.widthCount} x {matrix.heightCount} grid
+                    </Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      {matrix.productCount} {matrix.productCount === 1 ? "product" : "products"}
+                    </Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Edited {new Date(matrix.updatedAt).toLocaleDateString()}
+                    </Text>
+                  </InlineStack>
+                </Box>
+              </ResourceItem>
+            )}
+          />
         </Card>
       </Box>
 
